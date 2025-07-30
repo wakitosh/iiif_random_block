@@ -40,16 +40,16 @@ Enter one rule per line in the format: Condition \=\> Action
 
 **Conditions:**
 
-* 5: Matches if there are exactly 5 canvases.  
-* 1-4: Matches if there are between 1 and 4 canvases (inclusive).  
+* 5: Matches if there are exactly 5 canvases.
+* 1-4: Matches if there are between 1 and 4 canvases (inclusive).
 * 10+: Matches if there are 10 or more canvases.
 
 **Actions:**
 
-* 3: Selects the 3rd canvas.  
-* last: Selects the very last canvas.  
-* random: Selects a random canvas from all available pages.  
-* random(2-last): Selects a random canvas from the 2nd page to the last page.  
+* 3: Selects the 3rd canvas.
+* last: Selects the very last canvas.
+* random: Selects a random canvas from all available pages.
+* random(2-last): Selects a random canvas from the 2nd page to the last page.
 * random(1-last-1): Selects a random canvas from the 1st page to the second-to-last page (effectively excluding the last page).
 
 ### **4\. Update Frequency**
@@ -73,7 +73,7 @@ This module relies on Drupal's cron system to function correctly.
 The cron job for this module performs the following tasks based on the "Update interval" you set:
 
 1. It randomly selects a number of manifest URLs from your list (based on the "Number of images to display" setting).
-2. For each selected manifest, it fetches the data, randomly picks an image (excluding the first page/canvas if there are multiple), and builds an IIIF image URL with the specified size.
+2. For each selected manifest, it fetches the data, randomly picks an image, and builds an IIIF image URL with the specified size.
 3. It saves this new list of images to the database.
 
 **If** cron does not **run, the images in the block will never be updated.** After the initial setup, you must run cron once to get the first set of images.
@@ -120,16 +120,16 @@ The cron job for this module performs the following tasks based on the "Update i
 
 **条件 (Conditions):**
 
-* 5: キャンバスがちょうど5つの場合に一致します。  
-* 1-4: キャンバスが1つ以上4つ以下の場合に一致します。  
+* 5: キャンバスがちょうど5つの場合に一致します。
+* 1-4: キャンバスが1つ以上4つ以下の場合に一致します。
 * 10+: キャンバスが10個以上の場合に一致します。
 
 **アクション (Actions):**
 
-* 3: 3番目のキャンバスを選択します。  
-* last: 最後のキャンバスを選択します。  
-* random: 利用可能なすべてのページからランダムに選択します。  
-* random(2-last): 2ページ目から最後のページまでの範囲でランダムに選択します。  
+* 3: 3番目のキャンバスを選択します。
+* last: 最後のキャンバスを選択します。
+* random: 利用可能なすべてのページからランダムに選択します。
+* random(2-last): 2ページ目から最後のページまでの範囲でランダムに選択します。
 * random(1-last-1): 1ページ目から最後から2番目のページまでの範囲でランダムに選択します（事実上、最終ページを除外します）。
 
 #### **4\. 更新間隔 (Update Frequency)**
@@ -153,7 +153,7 @@ The cron job for this module performs the following tasks based on the "Update i
 このモジュールのCronジョブは、設定した「更新間隔」に基づいて以下のタスクを実行します。
 
 1. あなたのURLリストから、ランダムにマニフェストURLをいくつか選択します（「表示する画像の数」の設定に基づきます）。
-2. 選択された各マニフェストについて、データを取得し、ランダムに画像を選択し（複数ページある場合は1ページ目を除く）、指定されたサイズのIIIF画像URLを構築します。
+2. 選択された各マニフェストについて、データを取得し、ランダムに画像を選択し、指定されたサイズのIIIF画像URLを構築します。
 3. この新しい画像のリストをデータベースに保存します。
 
 **Cronが実行されないと、ブロックの画像は一切更新されません。** 初回設定後、最初の画像セットを取得するために一度Cronを実行する必要があります。
