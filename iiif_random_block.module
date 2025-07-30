@@ -60,17 +60,30 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
         $selected_index = $canvas_count - 1;
       }
       elseif (strpos($action, 'random') !== false) {
-        preg_match('/random\((\d+)-(\d+|last)\)/', $action, $matches);
+        // Updated regex to capture an optional negative offset for 'last'.
+        // e.g., random(1-last-1)
+        preg_match('/random\((\d+)-(\d+|last)(-(\d+))?\)/', $action, $matches);
+
         $rand_min = 0;
         $rand_max = $canvas_count - 1;
+
         if (!empty($matches)) {
           $rand_min = (int) $matches[1] - 1;
-          $rand_max = ($matches[2] === 'last') ? $canvas_count - 1 : (int) $matches[2] - 1;
+          $end_val = $matches[2];
+          $offset = isset($matches[4]) ? (int) $matches[4] : 0;
+
+          if ($end_val === 'last') {
+            $rand_max = $canvas_count - 1 - $offset;
+          } else {
+            $rand_max = (int) $end_val - 1;
+          }
         }
+
         $rand_min = max(0, $rand_min);
         $rand_max = min($canvas_count - 1, $rand_max);
+
         if ($rand_min > $rand_max) {
-          // Invalid range, fallback to selecting from all.
+          // Invalid range (e.g., random(1-last-1) on a 1-page doc), fallback to all.
           $selected_index = mt_rand(0, $canvas_count - 1);
         } else {
           $selected_index = mt_rand($rand_min, $rand_max);
