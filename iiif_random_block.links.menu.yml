@@ -1,0 +1,6 @@
+iiif_random_block.settings_form:
+  title: 'IIIF Random Block'
+  description: 'Configure the IIIF Random Block module.'
+  parent: system.admin_config_media
+  route_name: iiif_random_block.settings
+  weight: 100

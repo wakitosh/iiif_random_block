@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the IIIF Random Block module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function iiif_random_block_schema() {
+  $schema['iiif_manifest_urls'] = [
+    'description' => 'Stores the list of IIIF manifest URLs provided by the administrator.',
+    'fields' => [
+      'mid' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique manifest ID.',
+      ],
+      'url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'The URL of the IIIF manifest.',
+      ],
+    ],
+    'primary key' => ['mid'],
+    'indexes' => [
+      'url' => [['url', 255]],
+    ],
+  ];
+
+  $schema['iiif_display_images'] = [
+    'description' => 'Stores the 5 randomly selected images to be displayed in the block.',
+    'fields' => [
+      'did' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique display ID.',
+      ],
+      'image_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+      ],
+      'manifest_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+      ],
+      'related_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+      ],
+      'label' => [
+        'type' => 'varchar',
+        'length' => 512,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['did'],
+  ];
+  return $schema;
+}

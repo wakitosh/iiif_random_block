@@ -1,0 +1,7 @@
+iiif_random_block.settings:
+  path: '/admin/config/media/iiif-random-block'
+  defaults:
+    _form: '\Drupal\iiif_random_block\Form\SettingsForm'
+    _title: 'IIIF Random Block Settings'
+  requirements:
+    _permission: 'administer site configuration'

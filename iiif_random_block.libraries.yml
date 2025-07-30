@@ -1,0 +1,7 @@
+carousel:
+  version: 1.x
+  js:
+    js/carousel.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery

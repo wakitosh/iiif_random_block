@@ -1,0 +1,5 @@
+name: 'IIIF Random Block'
+type: module
+description: 'Displays a carousel of random IIIF images from a specified list of manifests.'
+package: Custom
+core_version_requirement: ^10 || ^11

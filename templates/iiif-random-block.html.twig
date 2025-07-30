@@ -1,0 +1,94 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the IIIF Random Block (Carousel version).
+ *
+ * Available variables:
+ * - items: An array of items to display. Each item contains:
+ * - image_url: URL of the IIIF image.
+ * - manifest_url: URL of the IIIF manifest.
+ * - related_url: URL to the original item page.
+ * - label: The label of the manifest.
+ * - source_link: The URL of the data source.
+ * - source_link_text: The text for the source link.
+ *
+ * @see iiif_random_block.module
+ */
+#}
+<style>
+  .iiif-carousel-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .iiif-carousel-item {
+    display: none; /* Initially hide all items */
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.9em;
+    animation: iiif-fade 1.5s;
+  }
+  .iiif-carousel-item.active {
+    display: block; /* Show only the active item */
+  }
+  .iiif-carousel-item img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto 0.5rem;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .iiif-carousel-item .item-link {
+    margin-top: 0.5rem;
+    word-wrap: break-word;
+  }
+  .iiif-carousel-item .item-link a {
+    color: #333;
+    text-decoration: none;
+  }
+  .iiif-carousel-item .item-link a:hover {
+    text-decoration: underline;
+  }
+  .iiif-carousel-footer {
+    font-size: 0.8em;
+    color: #666;
+    text-align: right;
+  }
+  @keyframes iiif-fade {
+    from { opacity: .4 }
+    to { opacity: 1 }
+  }
+</style>
+
+<div class="iiif-carousel">
+  {% if items %}
+    <div class="iiif-carousel-container">
+      {% for item in items %}
+        <div class="iiif-carousel-item">
+          {# The image itself remains a link to the item page #}
+          <a href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
+            <img src="{{ item.image_url }}" alt="{{ item.label }}" loading="lazy">
+          </a>
+
+          {# The text link below is now the item's label, linking to the item page #}
+          <div class="item-link">
+            <a href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer">
+              {{ item.label }}
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>{{ 'No images to display. Please run cron to generate data.'|t }}</p>
+  {% endif %}
+
+  {% if source_link_text and source_link %}
+  <div class="iiif-carousel-footer">
+    {{ 'Source:'|t }} <a href="{{ source_link }}" target="_blank" rel="noopener noreferrer">{{ source_link_text }}</a>
+  </div>
+  {% endif %}
+</div>
