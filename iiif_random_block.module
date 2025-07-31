@@ -26,6 +26,7 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
 
   $rules = preg_split('/\\r\\n|\\r|\\n/', $rules_string, -1, PREG_SPLIT_NO_EMPTY);
   $selected_index = -1;
+  $rule_condition_was_met = FALSE;
 
   foreach ($rules as $rule) {
     if (strpos($rule, '=>') === false) {
@@ -33,7 +34,7 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
     }
     [$condition, $action] = array_map('trim', explode('=>', $rule, 2));
 
-    // Check if condition matches
+    // Check if the condition for this rule matches the canvas count.
     $condition_met = FALSE;
     if (strpos($condition, '+') !== false) {
       $min = (int) $condition;
@@ -54,14 +55,14 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
     }
 
     if ($condition_met) {
-      // Perform action
+      // A rule's condition has matched. We will not use the final fallback.
+      $rule_condition_was_met = TRUE;
       $action = strtolower($action);
+
       if ($action === 'last') {
         $selected_index = $canvas_count - 1;
       }
       elseif (strpos($action, 'random') !== false) {
-        // Updated regex to capture an optional negative offset for 'last'.
-        // e.g., random(1-last-1)
         preg_match('/random\((\d+)-(\d+|last)(-(\d+))?\)/', $action, $matches);
 
         $rand_min = 0;
@@ -74,7 +75,8 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
 
           if ($end_val === 'last') {
             $rand_max = $canvas_count - 1 - $offset;
-          } else {
+          }
+          else {
             $rand_max = (int) $end_val - 1;
           }
         }
@@ -82,23 +84,32 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
         $rand_min = max(0, $rand_min);
         $rand_max = min($canvas_count - 1, $rand_max);
 
-        if ($rand_min > $rand_max) {
-          // Invalid range (e.g., random(1-last-1) on a 1-page doc), fallback to all.
-          $selected_index = mt_rand(0, $canvas_count - 1);
-        } else {
+        // Only select if the range is valid.
+        if ($rand_min <= $rand_max) {
           $selected_index = mt_rand($rand_min, $rand_max);
         }
+        // If the range is invalid, $selected_index remains -1.
       }
       else {
         $selected_index = (int) $action - 1;
       }
-      break; // First matching rule wins.
+
+      // The first matching rule wins, so we exit the loop.
+      break;
     }
   }
 
-  // Fallback if no rule matched or index is invalid.
-  if ($selected_index < 0 || $selected_index >= $canvas_count) {
+  // Fallback to random(all) ONLY if no rule condition was ever met.
+  if (!$rule_condition_was_met) {
     $selected_index = mt_rand(0, $canvas_count - 1);
+  }
+
+  // Final check for a valid index before returning.
+  if ($selected_index < 0 || $selected_index >= $canvas_count) {
+    // This can happen if a rule's condition matched, but its action was
+    // impossible (e.g., "5 => 10" or "random(3-2)"). In this case,
+    // we return NULL to signal that no valid selection could be made.
+    return NULL;
   }
 
   return $canvases[$selected_index] ?? NULL;
@@ -151,7 +162,6 @@ function iiif_random_block_cron() {
       $is_v3 = is_string($context) && strpos($context, 'presentation/3') !== false;
       $canvases = $is_v3 ? ($manifest['items'] ?? []) : ($manifest['sequences'][0]['canvases'] ?? []);
 
-      // Use the new helper function to select a canvas.
       $selected_canvas = _iiif_random_block_get_canvas_by_rules($canvases, $selection_rules);
 
       if (!$selected_canvas) {
@@ -169,7 +179,8 @@ function iiif_random_block_cron() {
             }
           }
         }
-      } else {
+      }
+      else {
         $image_service = $selected_canvas['images'][0]['resource']['service']['@id'] ?? NULL;
       }
 
