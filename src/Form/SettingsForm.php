@@ -13,7 +13,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SettingsForm extends ConfigFormBase {
 
+  /**
+   * The database connection service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
   protected $database;
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
   protected $renderer;
 
   /**
@@ -96,14 +106,37 @@ class SettingsForm extends ConfigFormBase {
 
     // Source Settings...
     $form['source_settings'] = ['#type' => 'fieldset', '#title' => $this->t('Source Information')];
-    $form['source_settings']['source_link_text'] = ['#type' => 'textfield', '#title' => $this->t('Source Name'), '#description' => $this->t('Leave blank to hide the source information.'), '#default_value' => $config->get('source_link_text')];
-    $form['source_settings']['source_link_url'] = ['#type' => 'url', '#title' => $this->t('Source URL'), '#default_value' => $config->get('source_link_url')];
+    $form['source_settings']['source_link_text'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Source Name'),
+      '#description' => $this->t('Leave blank to hide the source information.'),
+      '#default_value' => $config->get('source_link_text'),
+    ];
+    $form['source_settings']['source_link_url'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Source URL'),
+      '#default_value' => $config->get('source_link_url'),
+    ];
 
     // Display Settings...
     $form['display_settings'] = ['#type' => 'fieldset', '#title' => $this->t('Display Settings')];
-    $form['display_settings']['number_of_images'] = ['#type' => 'number', '#title' => $this->t('Number of images to display'), '#default_value' => $config->get('number_of_images') ?: 5];
-    $form['display_settings']['carousel_duration'] = ['#type' => 'number', '#title' => $this->t('Carousel duration'), '#default_value' => $config->get('carousel_duration') ?: 10, '#field_suffix' => $this->t('seconds')];
-    $form['display_settings']['image_size'] = ['#type' => 'number', '#title' => $this->t('Image size (max pixels)'), '#default_value' => $config->get('image_size') ?: 800, '#field_suffix' => $this->t('px')];
+    $form['display_settings']['number_of_images'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Number of images to display'),
+      '#default_value' => $config->get('number_of_images') ?: 5,
+    ];
+    $form['display_settings']['carousel_duration'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Carousel duration'),
+      '#default_value' => $config->get('carousel_duration') ?: 10,
+      '#field_suffix' => $this->t('seconds'),
+    ];
+    $form['display_settings']['image_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Image size (max pixels)'),
+      '#default_value' => $config->get('image_size') ?: 800,
+      '#field_suffix' => $this->t('px'),
+    ];
 
     // Image Selection Rules...
     $default_rules = "1 => 1\n2 => 2\n3+ => random(2-last-1)";
@@ -153,7 +186,12 @@ class SettingsForm extends ConfigFormBase {
     $results = $query->execute()->fetchCol();
     $urls = implode("\n", $results);
     $form['manifest_urls_fieldset'] = ['#type' => 'fieldset', '#title' => $this->t('Manifest URLs')];
-    $form['manifest_urls_fieldset']['manifest_urls'] = ['#type' => 'textarea', '#title' => $this->t('IIIF Manifest URLs'), '#default_value' => $urls, '#rows' => 10];
+    $form['manifest_urls_fieldset']['manifest_urls'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('IIIF Manifest URLs'),
+      '#default_value' => $urls,
+      '#rows' => 10,
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -286,7 +324,13 @@ class SettingsForm extends ConfigFormBase {
         ];
       }
       catch (\Exception $e) {
-        $logger->error('Failed to process manifest @url: @message', ['@url' => $manifest_url, '@message' => $e->getMessage()]);
+        $logger->error(
+          'Failed to process manifest @url: @message',
+          [
+            '@url' => $manifest_url,
+            '@message' => $e->getMessage(),
+          ]
+        );
       }
     }
 
