@@ -120,8 +120,6 @@ function _iiif_random_block_get_canvas_by_rules(array $canvases, string $rules_s
  * Implements hook_cron().
  */
 function iiif_random_block_cron() {
-  $database = \Drupal::database();
-  $client_factory = \Drupal::service('http_client_factory');
   $logger = \Drupal::logger('iiif_random_block');
   $state = \Drupal::state();
   $time = \Drupal::time();
@@ -129,97 +127,19 @@ function iiif_random_block_cron() {
 
   $cron_interval = $config->get('cron_interval') ?: 86400;
   $last_run = $state->get('iiif_random_block.last_cron_run', 0);
+
   if (($time->getRequestTime() - $last_run) < $cron_interval) {
     return;
   }
 
-  $logger->info('Cron job started: Selecting new IIIF images for the block.');
+  $logger->info('Cron job started: Calling updateDisplayedImages.');
 
-  $number_of_images = $config->get('number_of_images') ?: 5;
-  $image_size = $config->get('image_size') ?: 800;
-  $selection_rules = $config->get('selection_rules') ?: '';
-
-  $query = $database->select('iiif_manifest_urls', 'm')->fields('m', ['url'])->orderRandom()->range(0, $number_of_images);
-  $manifest_urls = $query->execute()->fetchCol();
-
-  if (count($manifest_urls) < $number_of_images) {
-    $logger->warning('Could not retrieve @num random manifests.', ['@num' => $number_of_images]);
-    return;
-  }
-
-  $display_data = [];
-  $client = $client_factory->fromOptions(['timeout' => 20]);
-
-  foreach ($manifest_urls as $manifest_url) {
-    try {
-      $response = $client->get($manifest_url);
-      $manifest = json_decode((string) $response->getBody(), TRUE);
-      if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \Exception('Invalid JSON');
-      }
-
-      $context = $manifest['@context'] ?? '';
-      $is_v3 = is_string($context) && strpos($context, 'presentation/3') !== false;
-      $canvases = $is_v3 ? ($manifest['items'] ?? []) : ($manifest['sequences'][0]['canvases'] ?? []);
-
-      $selected_canvas = _iiif_random_block_get_canvas_by_rules($canvases, $selection_rules);
-
-      if (!$selected_canvas) {
-        $logger->warning('Could not select a canvas for manifest @url.', ['@url' => $manifest_url]);
-        continue;
-      }
-
-      $image_service = NULL;
-      if ($is_v3) {
-        if (isset($selected_canvas['items'][0]['items'][0]['body']['service'])) {
-          foreach ($selected_canvas['items'][0]['items'][0]['body']['service'] as $service) {
-            if (isset($service['type']) && $service['type'] === 'ImageService3') {
-              $image_service = $service['id'] ?? $service['@id'] ?? NULL;
-              break;
-            }
-          }
-        }
-      }
-      else {
-        $image_service = $selected_canvas['images'][0]['resource']['service']['@id'] ?? NULL;
-      }
-
-      if (!$image_service) {
-        $logger->warning('Image service URL not found in selected canvas for manifest @url.', ['@url' => $manifest_url]);
-        continue;
-      }
-
-      $related_url = $manifest['related']['@id'] ?? $manifest['homepage'][0]['id'] ?? '#';
-      $label = $manifest['label']['@value'] ?? $manifest['label']['none'][0] ?? (is_string($manifest['label']) ? $manifest['label'] : 'Untitled');
-
-      $display_data[] = [
-        'image_url' => rtrim($image_service, '/') . "/full/!{$image_size},{$image_size}/0/default.jpg",
-        'manifest_url' => $manifest_url,
-        'related_url' => $related_url,
-        'label' => mb_substr($label, 0, 512),
-      ];
-    }
-    catch (\Exception $e) {
-      $logger->error('Failed to process manifest @url: @message', ['@url' => $manifest_url, '@message' => $e->getMessage()]);
-    }
-  }
-
-  if (!empty($display_data)) {
-    $transaction = $database->startTransaction();
-    try {
-      $database->truncate('iiif_display_images')->execute();
-      $query = $database->insert('iiif_display_images')->fields(['image_url', 'manifest_url', 'related_url', 'label']);
-      foreach ($display_data as $item) {
-        $query->values($item);
-      }
-      $query->execute();
-      $logger->info('Successfully updated display images table with @count items.', ['@count' => count($display_data)]);
-    }
-    catch (\Exception $e) {
-      $transaction->rollBack();
-      $logger->error('Failed to save display images to database: @message', ['@message' => $e->getMessage()]);
-    }
-  }
+  // Call the static method to do the work, passing values directly.
+  SettingsForm::updateDisplayedImages(
+    (int) $config->get('number_of_images'),
+    (int) $config->get('image_size'),
+    (string) $config->get('selection_rules')
+  );
 
   $state->set('iiif_random_block.last_cron_run', $time->getRequestTime());
   $logger->info('Cron job finished.');
