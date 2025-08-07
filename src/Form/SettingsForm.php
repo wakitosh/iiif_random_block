@@ -313,9 +313,27 @@ class SettingsForm extends ConfigFormBase {
         }
 
         $related_url = $manifest['related']['@id'] ?? $manifest['homepage'][0]['id'] ?? '#';
-        $label = $manifest['label']['@value'] ?? $manifest['label']['none'][0] ?? (is_string($manifest['label']) ? $manifest['label'] : 'Untitled');
 
-        // Update the image URL format to constrain width only.
+        // ** FIX **: Updated label extraction logic for v3 manifests.
+        $label = 'Untitled';
+        if (isset($manifest['label'])) {
+          if (is_string($manifest['label'])) {
+            $label = $manifest['label'];
+          }
+          elseif (is_array($manifest['label'])) {
+            // Handles v3 language maps like {"en": ["Title"], "ja": ["..."]}.
+            // It just takes the first available language's first value.
+            $first_lang_values = reset($manifest['label']);
+            if (is_array($first_lang_values) && isset($first_lang_values[0])) {
+              $label = $first_lang_values[0];
+            }
+            // Fallback for other structures like {"@value": "Title"}.
+            elseif (isset($manifest['label']['@value'])) {
+              $label = $manifest['label']['@value'];
+            }
+          }
+        }
+
         $display_data[] = [
           'image_url' => rtrim($image_service, '/') . "/full/$image_size,/0/default.jpg",
           'manifest_url' => $manifest_url,
