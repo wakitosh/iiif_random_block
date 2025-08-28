@@ -10,9 +10,9 @@ This module provides a Drupal block that displays a carousel of random images so
 
 ## **Installation**
 
-1. Place the `iiif_random_block` directory within your Drupal site's `/modules/custom` directory.  
-2. Go to the "Extend" page (`/admin/modules`) in your Drupal admin UI.  
-3. Find "IIIF Random Block" and check the box to enable it.  
+1. Place the `iiif_random_block` directory within your Drupal site's `/modules/custom` directory.
+2. Go to the "Extend" page (`/admin/modules`) in your Drupal admin UI.
+3. Find "IIIF Random Block" and check the box to enable it.
 4. Click "Install".
 
 ## **Configuration and Usage**
@@ -23,10 +23,10 @@ After installation, configure the module at **Administration \> Configuration \>
 
 The main workflow is:
 
-1. You provide a list of IIIF Manifest URLs.  
-2. You configure display options like the number of images and image size.  
-3. When you **save the configuration form**, the module immediately fetches a new random set of images and saves them to the database.  
-4. The block displays this saved set of images.  
+1. You provide a list of IIIF Manifest URLs.
+2. You configure display options like the number of images and image size.
+3. When you **save the configuration form**, the module immediately fetches a new random set of images and saves them to the database.
+4. The block displays this saved set of images.
 5. A **Cron job** runs periodically in the background to automatically refresh this set of images according to your "Update interval" setting.
 
 ### **Settings Page Sections**
@@ -39,14 +39,15 @@ This section shows a list of the images that are currently selected for display 
 
 #### **2\. Source Information**
 
-* **Source Name**: The name of the institution providing the data (e.g., "University of Tsukuba Library Digital Collections"). Leave blank to hide this information in the block's footer.  
+* **Source Name**: The name of the institution providing the data (e.g., "University of Tsukuba Library Digital Collections"). Leave blank to hide this information in the block's footer.
 * **Source URL**: The URL to the institution's main page.
 
 #### **3\. Display Settings**
 
-* **Number of images to display**: The number of random images to select and display in the carousel (e.g., 5).  
-* **Carousel duration**: The time in seconds to display each image before switching to the next one.  
+* **Number of images to display**: The number of random images to select and display in the carousel (e.g., 5).
+* **Carousel duration**: The time in seconds to display each image before switching to the next one.
 * **Image size (max pixels)**: The maximum width (in pixels) for the fetched IIIF image. The height will be scaled proportionally. A value of `800` is a good starting point.
+* **Aspect ratio**: Controls the rendered box ratio and uses client-side cropping via CSS. Options: `1:1` (default), `4:3`, `16:9`, or **Custom ratio** (enter width and height). Cropping is applied with `aspect-ratio` and `object-fit: cover`. If you need server-side square images, consider IIIF Image API features (e.g., `region=square`) depending on your image server's support.
 
 #### **4\. Image Selection Rules**
 
@@ -56,24 +57,24 @@ Enter one rule per line in the format: `Condition => Action`
 
 **Conditions:**
 
-* `5`: Matches if there are exactly 5 canvases.  
-* `1-4`: Matches if there are between 1 and 4 canvases (inclusive).  
+* `5`: Matches if there are exactly 5 canvases.
+* `1-4`: Matches if there are between 1 and 4 canvases (inclusive).
 * `10+`: Matches if there are 10 or more canvases.
 
 **Actions:**
 
-* `3`: Selects the 3rd canvas.  
-* `last`: Selects the very last canvas.  
-* `random`: Selects a random canvas from all available pages.  
-* `random(2-last)`: Selects a random canvas from the 2nd page to the last page.  
+* `3`: Selects the 3rd canvas.
+* `last`: Selects the very last canvas.
+* `random`: Selects a random canvas from all available pages.
+* `random(2-last)`: Selects a random canvas from the 2nd page to the last page.
 * `random(1-last-1)`: Selects a random canvas from the 1st page to the second-to-last page (effectively excluding the last page).
 
 #### **5\. Update Frequency**
 
-* **Update interval**: This determines how often the list of displayed images is **automatically refreshed** by the Cron job. The value is in seconds.  
-  * *Common values:*  
-    * 1 hour: `3600`  
-    * 12 hours: `43200`  
+* **Update interval**: This determines how often the list of displayed images is **automatically refreshed** by the Cron job. The value is in seconds.
+  * *Common values:*
+    * 1 hour: `3600`
+    * 12 hours: `43200`
     * 24 hours: `86400` (Default)
 
 #### **6\. Manifest URLs**
@@ -108,9 +109,9 @@ For a production website, you should configure a proper cron job on your server'
 
 ### **インストール**
 
-1. `iiif_random_block` ディレクトリを、Drupalサイトの `/modules/custom` ディレクトリ内に配置します。  
-2. Drupalの管理画面で「機能拡張」ページ（`/admin/modules`）に移動します。  
-3. 「IIIF Random Block」を見つけてチェックボックスをオンにします。  
+1. `iiif_random_block` ディレクトリを、Drupalサイトの `/modules/custom` ディレクトリ内に配置します。
+2. Drupalの管理画面で「機能拡張」ページ（`/admin/modules`）に移動します。
+3. 「IIIF Random Block」を見つけてチェックボックスをオンにします。
 4. 「インストール」ボタンをクリックします。
 
 ### **設定と使い方**
@@ -121,10 +122,10 @@ For a production website, you should configure a proper cron job on your server'
 
 主なワークフローは以下の通りです。
 
-1. あなたがIIIFマニフェストのURLリストを提供します。  
-2. 表示する画像の数やサイズなどの表示オプションを設定します。  
-3. **設定フォームを保存する**と、モジュールは**即座に**新しいランダムな画像セットを取得し、データベースに保存します。  
-4. ブロックは、この保存された画像セットを表示します。  
+1. あなたがIIIFマニフェストのURLリストを提供します。
+2. 表示する画像の数やサイズなどの表示オプションを設定します。
+3. **設定フォームを保存する**と、モジュールは**即座に**新しいランダムな画像セットを取得し、データベースに保存します。
+4. ブロックは、この保存された画像セットを表示します。
 5. **Cronジョブ**がバックグラウンドで定期的に実行され、「更新間隔」の設定に従ってこの画像セットを自動的に更新します。
 
 #### **設定ページのセクション**
@@ -137,14 +138,15 @@ For a production website, you should configure a proper cron job on your server'
 
 ##### **2\. 資料提供元情報 (Source Information)**
 
-* **Source Name**: 資料を提供する機関名（例: 「筑波大学デジタルコレクション」）。空欄にすると、この情報はブロックのフッターに表示されません。  
+* **Source Name**: 資料を提供する機関名（例: 「筑波大学デジタルコレクション」）。空欄にすると、この情報はブロックのフッターに表示されません。
 * **Source URL**: 資料提供機関のメインページへのURL。
 
 ##### **3\. 表示設定 (Display Settings)**
 
-* **Number of images to display**: カルーセルで表示するために選択するランダムな画像の数（例: 5）。  
-* **Carousel duration**: 各画像が次の画像に切り替わるまでの表示時間（秒単位）。  
+* **Number of images to display**: カルーセルで表示するために選択するランダムな画像の数（例: 5）。
+* **Carousel duration**: 各画像が次の画像に切り替わるまでの表示時間（秒単位）。
 * **Image size (max pixels)**: 取得するIIIF画像の最大**幅**（ピクセル単位）。高さは縦横比を維持して自動的に調整されます。800 が手始めとして良い値です。
+* **Aspect ratio（アスペクト比）**: 表示ボックスの比率を指定します。CSS によるクライアント側のトリミングで反映されます。選択肢は `1:1`（既定）、`4:3`、`16:9`、**Custom**（幅・高さを入力）です。`aspect-ratio` と `object-fit: cover` を用いて中央トリミングを行います。サーバ側で正方形を取得したい場合は、IIIF Image API の `region=square` などの機能（サーバ実装に依存）を検討してください。
 
 ##### **4\. 画像選択ルール (Image Selection Rules)**
 
@@ -154,24 +156,24 @@ For a production website, you should configure a proper cron job on your server'
 
 **条件 (Conditions):**
 
-* `5`: キャンバスがちょうど5つの場合に一致します。  
-* `1-4`: キャンバスが1つ以上4つ以下の場合に一致します。  
+* `5`: キャンバスがちょうど5つの場合に一致します。
+* `1-4`: キャンバスが1つ以上4つ以下の場合に一致します。
 * `10+`: キャンバスが10個以上の場合に一致します。
 
 **アクション (Actions):**
 
-* `3`: 3番目のキャンバスを選択します。  
-* `last`: 最後のキャンバスを選択します。  
-* `random`: 利用可能なすべてのページからランダムに選択します。  
-* `random(2-last)`: 2ページ目から最後のページまでの範囲でランダムに選択します。  
+* `3`: 3番目のキャンバスを選択します。
+* `last`: 最後のキャンバスを選択します。
+* `random`: 利用可能なすべてのページからランダムに選択します。
+* `random(2-last)`: 2ページ目から最後のページまでの範囲でランダムに選択します。
 * `random(1-last-1)`: 1ページ目から最後から2番目のページまでの範囲でランダムに選択します（事実上、最終ページを除外します）。
 
 ##### **5\. 更新間隔 (Update Frequency)**
 
-* **Update interval**: 表示される画像のリストが、Cronジョブによって**自動的に更新される**頻度を決定します。値は秒単位です。  
-  * *一般的な値:*  
-    * 1時間: `3600`  
-    * 12時間: `43200`  
+* **Update interval**: 表示される画像のリストが、Cronジョブによって**自動的に更新される**頻度を決定します。値は秒単位です。
+  * *一般的な値:*
+    * 1時間: `3600`
+    * 12時間: `43200`
     * 24時間: `86400` (デフォルト)
 
 ##### **6\. マニフェストURL (Manifest URLs)**
