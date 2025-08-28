@@ -138,6 +138,42 @@ class SettingsForm extends ConfigFormBase {
       '#field_suffix' => $this->t('px'),
     ];
 
+    // Aspect Ratio Settings...
+    $form['display_settings']['aspect_ratio_mode'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Aspect ratio'),
+      '#options' => [
+        '1_1' => $this->t('1:1'),
+        '4_3' => $this->t('4:3'),
+        '16_9' => $this->t('16:9'),
+        'custom' => $this->t('Custom ratio'),
+      ],
+      '#default_value' => $config->get('aspect_ratio_mode') ?: '1_1',
+      '#description' => $this->t('Displayed images are cropped client-side to the selected ratio using CSS.'),
+    ];
+    $form['display_settings']['aspect_ratio_custom_width'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio width'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_width') ?: 1,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    $form['display_settings']['aspect_ratio_custom_height'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio height'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_height') ?: 1,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+
     // Image Selection Rules...
     $default_rules = "1 => 1\n2 => 2\n3+ => random(2-last-1)";
     $form['selection_rules_settings'] = [
@@ -207,6 +243,9 @@ class SettingsForm extends ConfigFormBase {
       ->set('number_of_images', $form_state->getValue('number_of_images'))
       ->set('carousel_duration', $form_state->getValue('carousel_duration'))
       ->set('image_size', $form_state->getValue('image_size'))
+      ->set('aspect_ratio_mode', $form_state->getValue('aspect_ratio_mode'))
+      ->set('aspect_ratio_custom_width', (int) $form_state->getValue('aspect_ratio_custom_width'))
+      ->set('aspect_ratio_custom_height', (int) $form_state->getValue('aspect_ratio_custom_height'))
       ->set('selection_rules', $form_state->getValue('selection_rules'))
       ->set('cron_interval', $form_state->getValue('cron_interval'))
       ->save();
@@ -246,6 +285,23 @@ class SettingsForm extends ConfigFormBase {
     }
 
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    if ($form_state->getValue('aspect_ratio_mode') === 'custom') {
+      $w = (int) $form_state->getValue('aspect_ratio_custom_width');
+      $h = (int) $form_state->getValue('aspect_ratio_custom_height');
+      if ($w < 1) {
+        $form_state->setErrorByName('aspect_ratio_custom_width', $this->t('Custom ratio width must be greater than 0.'));
+      }
+      if ($h < 1) {
+        $form_state->setErrorByName('aspect_ratio_custom_height', $this->t('Custom ratio height must be greater than 0.'));
+      }
+    }
   }
 
   /**
@@ -381,12 +437,25 @@ class SettingsForm extends ConfigFormBase {
     }
     $rules = preg_split('/\\r\\n|\\r|\\n/', $rules_string, -1, PREG_SPLIT_NO_EMPTY);
     $selected_index = -1;
-    $rule_condition_was_met = FALSE;
+    $warnings = [];
+    // Avoid duplicate warnings for the same rules string within one request.
+    static $logged_rule_hashes = [];
+    $rules_hash = sha1($rules_string);
     foreach ($rules as $rule) {
       if (strpos($rule, '=>') === FALSE) {
+        $warnings[] = 'Invalid rule format (missing "=>"): ' . trim($rule);
         continue;
       }
       [$condition, $action] = array_map('trim', explode('=>', $rule, 2));
+
+      // Validate condition syntax: N, N-M, or N+.
+      $condition_valid = (bool) (preg_match('/^\d+$/', $condition)
+        || preg_match('/^\d+-\d+$/', $condition)
+        || preg_match('/^\d+\+$/', $condition));
+      if (!$condition_valid) {
+        $warnings[] = 'Invalid condition: ' . $condition;
+        continue;
+      }
       $condition_met = FALSE;
       if (strpos($condition, '+') !== FALSE) {
         if ($canvas_count >= (int) $condition) {
@@ -405,37 +474,73 @@ class SettingsForm extends ConfigFormBase {
         }
       }
       if ($condition_met) {
-        $rule_condition_was_met = TRUE;
         $action = strtolower($action);
         if ($action === 'last') {
+          // Always select the last index.
           $selected_index = $canvas_count - 1;
+          break;
         }
         elseif (strpos($action, 'random') !== FALSE) {
-          preg_match('/random\((\d+)-(\d+|last)(-(\d+))?\)/', $action, $matches);
-          $rand_min = 0;
-          $rand_max = $canvas_count - 1;
-          if (!empty($matches)) {
+          // Interpret random / random(A-B) / random(A-last[-offset]).
+          if (preg_match('/^random\((\d+)-(\d+|last)(-(\d+))?\)$/', $action, $matches)) {
             $rand_min = (int) $matches[1] - 1;
             $end_val = $matches[2];
             $offset = isset($matches[4]) ? (int) $matches[4] : 0;
             $rand_max = ($end_val === 'last') ? $canvas_count - 1 - $offset : (int) $end_val - 1;
+            // Clamp range to canvas bounds.
+            $rand_min = max(0, $rand_min);
+            $rand_max = min($canvas_count - 1, $rand_max);
+            if ($rand_min <= $rand_max) {
+              $selected_index = mt_rand($rand_min, $rand_max);
+              break;
+            }
+            // Invalid range; continue to next rule.
           }
-          $rand_min = max(0, $rand_min);
-          $rand_max = min($canvas_count - 1, $rand_max);
-          if ($rand_min <= $rand_max) {
-            $selected_index = mt_rand($rand_min, $rand_max);
+          elseif ($action === 'random') {
+            // Full-range random.
+            $selected_index = mt_rand(0, $canvas_count - 1);
+            break;
           }
+          else {
+            // Syntax like "random(...)" but not matching expected pattern.
+            $warnings[] = 'Invalid random syntax: ' . $action;
+            // Continue to the next rule.
+          }
+        }
+        elseif (preg_match('/^\d+$/', $action)) {
+          // Numeric action (1-based).
+          $num = (int) $action;
+          if ($num <= 0) {
+            $warnings[] = 'Invalid numeric action (must be >= 1): ' . $action;
+            continue;
+          }
+          $candidate = $num - 1;
+          if ($candidate >= 0 && $candidate < $canvas_count) {
+            $selected_index = $candidate;
+            break;
+          }
+          // Out of range; continue to next rule without warning.
         }
         else {
-          $selected_index = (int) $action - 1;
-        }
-        if ($selected_index >= 0) {
-          break;
+          // Unknown action keyword.
+          $warnings[] = 'Unknown action: ' . $action;
+          // Continue to the next rule.
         }
       }
     }
-    if (!$rule_condition_was_met) {
+    // If no rule produced a valid selection, fall back to global random.
+    if ($selected_index < 0) {
       $selected_index = mt_rand(0, $canvas_count - 1);
+    }
+    // Emit warnings once per request for the same rules string.
+    if (!empty($warnings) && empty($logged_rule_hashes[$rules_hash])) {
+      // Avoid errors in unit tests without a Drupal container.
+      if (class_exists('Drupal\\Drupal') && \Drupal::hasContainer()) {
+        \Drupal::logger('iiif_random_block')->warning('Selection rules contain errors; using fallbacks. Problems: @problems', [
+          '@problems' => implode(' | ', array_unique($warnings)),
+        ]);
+      }
+      $logged_rule_hashes[$rules_hash] = TRUE;
     }
     if ($selected_index < 0 || $selected_index >= $canvas_count) {
       return NULL;

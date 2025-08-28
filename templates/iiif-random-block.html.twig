@@ -37,7 +37,7 @@
     height: auto;
     display: block;
     margin: 0 auto 0.5rem;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: var(--iiif-aspect-ratio, 1 / 1);
     object-fit: cover;
     border-radius: 8px;
   }
@@ -63,7 +63,7 @@
   }
 </style>
 
-<div class="iiif-carousel">
+<div class="iiif-carousel" style="--iiif-aspect-ratio: {{ aspect_ratio }};">
   {% if items %}
     <div class="iiif-carousel-container">
       {% for item in items %}

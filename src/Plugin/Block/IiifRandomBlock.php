@@ -7,6 +7,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
  * Provides an 'IIIF Random Image' Block.
@@ -19,16 +20,35 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
+  /**
+   * Database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
   protected $database;
+
+  /**
+   * Config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
   protected $configFactory;
+
+  /**
+   * Logger channel factory.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerFactory;
 
   /**
    * Constructs a new IiifRandomBlock instance.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database, ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->database = $database;
     $this->configFactory = $config_factory;
+    $this->loggerFactory = $logger_factory;
   }
 
   /**
@@ -40,7 +60,8 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $plugin_id,
       $plugin_definition,
       $container->get('database'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('logger.factory')
     );
   }
 
@@ -55,16 +76,32 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
       $items = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
     }
     catch (\Exception $e) {
-      \Drupal::logger('iiif_random_block')->error('Could not fetch display images from database: @message', ['@message' => $e->getMessage()]);
+      // Using core logger via factory keeps DI pattern consistent.
+      $this->loggerFactory->get('iiif_random_block')->error('Could not fetch display images from database: @message', ['@message' => $e->getMessage()]);
     }
 
     $config = $this->configFactory->get('iiif_random_block.settings');
+    // Compute aspect ratio string like "1 / 1" for CSS.
+    $mode = $config->get('aspect_ratio_mode') ?: '1_1';
+    $ratio = '1 / 1';
+    if ($mode === '4_3') {
+      $ratio = '4 / 3';
+    }
+    elseif ($mode === '16_9') {
+      $ratio = '16 / 9';
+    }
+    elseif ($mode === 'custom') {
+      $w = max(1, (int) $config->get('aspect_ratio_custom_width'));
+      $h = max(1, (int) $config->get('aspect_ratio_custom_height'));
+      $ratio = $w . ' / ' . $h;
+    }
 
     $build['content'] = [
       '#theme' => 'iiif_random_block',
       '#items' => $items,
       '#source_link_text' => $config->get('source_link_text'),
       '#source_link' => $config->get('source_link_url'),
+      '#aspect_ratio' => $ratio,
     ];
 
     // Attach the carousel library and settings.
