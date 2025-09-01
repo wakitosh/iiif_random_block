@@ -52,3 +52,15 @@ function iiif_random_block_theme($existing, $type, $theme, $path) {
     ],
   ];
 }
+
+/**
+ * Implements hook_config_translation_info().
+ */
+function iiif_random_block_config_translation_info(&$info) {
+  $info['iiif_random_block.settings'] = [
+  // Must be a plain string; ConfigNamesMapper will translate it later.
+  'title' => 'IIIF Random Block settings',
+    'base_route_name' => 'iiif_random_block.settings',
+    'names' => ['iiif_random_block.settings'],
+  ];
+}

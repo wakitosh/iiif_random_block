@@ -1,0 +1,13 @@
+source_link_text: ''
+source_link_url: ''
+number_of_images: 5
+carousel_duration: 10
+image_size: 800
+aspect_ratio_mode: '1_1'
+aspect_ratio_custom_width: 1
+aspect_ratio_custom_height: 1
+selection_rules: |-
+  1 => 1
+  2 => 2
+  3+ => random(2-last-1)
+cron_interval: 86400
