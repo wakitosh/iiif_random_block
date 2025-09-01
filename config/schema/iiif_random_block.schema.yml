@@ -1,0 +1,35 @@
+iiif_random_block.settings:
+  type: config_object
+  label: 'IIIF Random Block settings'
+  mapping:
+    source_link_text:
+      type: label
+      label: 'Source Name'
+      translatable: true
+    source_link_url:
+      type: string
+      label: 'Source URL'
+    number_of_images:
+      type: integer
+      label: 'Number of images to display'
+    carousel_duration:
+      type: integer
+      label: 'Carousel duration (seconds)'
+    image_size:
+      type: integer
+      label: 'Image size (max pixels)'
+    aspect_ratio_mode:
+      type: string
+      label: 'Aspect ratio mode'
+    aspect_ratio_custom_width:
+      type: integer
+      label: 'Custom ratio width'
+    aspect_ratio_custom_height:
+      type: integer
+      label: 'Custom ratio height'
+    selection_rules:
+      type: text
+      label: 'Image selection rules'
+    cron_interval:
+      type: integer
+      label: 'Update interval (seconds)'

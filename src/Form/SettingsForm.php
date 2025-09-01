@@ -109,7 +109,7 @@ class SettingsForm extends ConfigFormBase {
     $form['source_settings']['source_link_text'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Source Name'),
-      '#description' => $this->t('Leave blank to hide the source information.'),
+      '#description' => $this->t('Leave blank to hide the source information. This label is translatable (Configuration translation).'),
       '#default_value' => $config->get('source_link_text'),
     ];
     $form['source_settings']['source_link_url'] = [
