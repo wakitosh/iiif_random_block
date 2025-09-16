@@ -102,6 +102,12 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#source_link_text' => $config->get('source_link_text'),
       '#source_link' => $config->get('source_link_url'),
       '#aspect_ratio' => $ratio,
+      // Provide processed text for info panel.
+      '#info_text' => [
+        '#type' => 'processed_text',
+        '#text' => (string) ($config->get('info_text.value') ?: ''),
+        '#format' => (string) ($config->get('info_text.format') ?: filter_default_format()),
+      ],
     ];
 
     // Attach the carousel library and settings.
@@ -109,8 +115,12 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $build['#attached']['library'][] = 'iiif_random_block/carousel';
     $build['#attached']['drupalSettings']['iiif_random_block']['carousel']['duration'] = $duration * 1000;
 
-    // Do not cache the block render array.
-    $build['#cache']['max-age'] = 0;
+    // Provide correct cacheability so changes in settings are reflected
+    // immediately without requiring a full cache rebuild. When the
+    // configuration is saved, its cache tag will be invalidated and this
+    // block will be recomputed.
+    $build['#cache']['tags'] = $config->getCacheTags();
+    $build['#cache']['contexts'][] = 'languages:language_interface';
 
     return $build;
   }

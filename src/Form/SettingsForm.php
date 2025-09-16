@@ -138,6 +138,15 @@ class SettingsForm extends ConfigFormBase {
       '#field_suffix' => $this->t('px'),
     ];
 
+    // Info panel content (rich text).
+    $form['display_settings']['info_text'] = [
+      '#type' => 'text_format',
+      '#title' => $this->t('Info panel text'),
+      '#description' => $this->t('Text shown when clicking the ⓘ icon on a slide.'),
+      '#format' => $config->get('info_text.format') ?: filter_default_format(),
+      '#default_value' => $config->get('info_text.value') ?: '',
+    ];
+
     // Aspect Ratio Settings...
     $form['display_settings']['aspect_ratio_mode'] = [
       '#type' => 'select',
@@ -248,6 +257,10 @@ class SettingsForm extends ConfigFormBase {
       ->set('aspect_ratio_custom_height', (int) $form_state->getValue('aspect_ratio_custom_height'))
       ->set('selection_rules', $form_state->getValue('selection_rules'))
       ->set('cron_interval', $form_state->getValue('cron_interval'))
+      ->set('info_text', [
+        'value' => $form_state->getValue('info_text')['value'] ?? '',
+        'format' => $form_state->getValue('info_text')['format'] ?? filter_default_format(),
+      ])
       ->save();
 
     $urls_text = $form_state->getValue('manifest_urls');

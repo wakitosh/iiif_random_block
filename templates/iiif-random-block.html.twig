@@ -29,6 +29,74 @@
     font-size: 0.9em;
     /* no animation here; apply on .active to ensure first render animates */
   }
+
+  /* Media wrapper reserves height (aspect-ratio) and provides positioning */
+  .iiif-mediawrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--iiif-aspect-ratio, 1 / 1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 auto 0.5rem;
+  }
+
+  /* Info button (ⓘ) */
+  .iiif-info-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    display: none; /* shown on hover */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #000000; /* set icon (currentColor) to black */
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    cursor: pointer;
+    z-index: 2;
+  }
+  .iiif-mediawrap:hover .iiif-info-btn { display: flex; }
+  .iiif-info-btn svg { width: 22px; height: 22px; display: block; }
+
+  /* Info panel */
+  .iiif-info-panel {
+    position: absolute; /* positioned inside .iiif-mediawrap */
+    left: 0;
+    right: 0;
+    top: 0;
+    margin: 0 auto;
+    width: 100%;
+    min-height: 50%; /* half of the media (image) height */
+    max-height: 100%;
+    background: #fff;
+    color: #333;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.12);
+    box-shadow:
+      0 12px 28px rgba(0,0,0,.22),
+      0 2px 8px rgba(0,0,0,.12);
+    overflow: auto;
+    padding: 12px 16px 16px;
+    display: none;
+    z-index: 3;
+    text-align: left; /* override parent center alignment */
+  }
+  .iiif-info-panel.open { display: block; }
+  .iiif-info-panel .iiif-info-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: #f5f5f5; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,.1);
+    margin: -4px -4px 8px 8px;
+    z-index: 1;
+  }
+  .iiif-info-panel .iiif-info-close svg { width: 16px; height: 16px; stroke: #333; stroke-width: 2; fill: none; }
   .iiif-carousel-item.active {
     display: block; /* Show only the active item */
     animation: iiif-fade 1.0s ease; /* fade on activation (including first) */
@@ -48,14 +116,13 @@
   .iiif-imgwrap {
     display: block;
     width: 100%;
-    aspect-ratio: var(--iiif-aspect-ratio, 1 / 1);
+    height: 100%; /* fill mediawrap height */
     /* Skeleton shimmer */
     background: linear-gradient(90deg, #e9e9e9 25%, #f5f5f5 37%, #e9e9e9 63%);
     background-size: 400% 100%;
     animation: iiif-skeleton 1.2s ease-in-out infinite;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0 auto 0.5rem;
+    /* border radius and overflow are on mediawrap */
+    margin: 0;
   }
 
   /* Stop skeleton once the image has loaded (modern browsers supporting :has) */
@@ -99,10 +166,34 @@
     <div class="iiif-carousel-container">
       {% for item in items %}
         <div class="iiif-carousel-item">
-          {# The image itself remains a link to the item page #}
-          <a class="iiif-imgwrap" href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
-            <img src="{{ item.image_url }}" alt="{{ item.label }}" loading="lazy">
-          </a>
+          <div class="iiif-mediawrap">
+            <div class="iiif-info-btn" role="button" aria-label="Information">
+              <!-- Provided SVG info icon (color via currentColor) -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" aria-hidden="true">
+                <g fill="currentColor">
+                  <path d="m80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z"/>
+                  <path d="m57.373 18.231a9.3834 9.1153 0 1 1 -18.767 0 9.3834 9.1153 0 1 1 18.767 0z" transform="matrix(1.1989 0 0 1.2342 21.214 28.75)"/>
+                  <path d="m90.665 110.96c-0.069 2.73 1.211 3.5 4.327 3.82l5.008 0.1v5.12h-39.073v-5.12l5.503-0.1c3.291-0.1 4.082-1.38 4.327-3.82v-30.813c0.035-4.879-6.296-4.113-10.757-3.968v-5.074l30.665-1.105"/>
+                </g>
+              </svg>
+            </div>
+
+            {# The image itself remains a link to the item page #}
+            <a class="iiif-imgwrap" href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
+              <img src="{{ item.image_url }}" alt="{{ item.label }}" loading="lazy">
+            </a>
+
+            <div class="iiif-info-panel" role="dialog" aria-modal="false">
+              <div class="iiif-info-close" role="button" aria-label="Close">
+                <!-- SVG close icon (X) -->
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                </svg>
+              </div>
+              {{ info_text }}
+            </div>
+          </div>
 
           {# The text link below is now the item's label, linking to the item page #}
           <div class="item-link">

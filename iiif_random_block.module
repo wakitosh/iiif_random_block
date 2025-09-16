@@ -48,6 +48,7 @@ function iiif_random_block_theme($existing, $type, $theme, $path) {
         'source_link_text' => '',
         'source_link' => '',
   'aspect_ratio' => '1 / 1',
+        'info_text' => NULL,
       ],
     ],
   ];
