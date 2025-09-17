@@ -139,12 +139,25 @@ class SettingsForm extends ConfigFormBase {
     ];
 
     // Info panel content (rich text).
+    $form['display_settings']['info_button_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable info button'),
+      '#description' => $this->t('If unchecked, the ⓘ button and info panel will be hidden entirely.'),
+      '#default_value' => $config->get('info_button_enabled') !== NULL ? (bool) $config->get('info_button_enabled') : TRUE,
+      '#weight' => 49,
+    ];
     $form['display_settings']['info_text'] = [
       '#type' => 'text_format',
       '#title' => $this->t('Info panel text'),
       '#description' => $this->t('Text shown when clicking the ⓘ icon on a slide.'),
       '#format' => $config->get('info_text.format') ?: filter_default_format(),
       '#default_value' => $config->get('info_text.value') ?: '',
+      '#weight' => 50,
+      '#states' => [
+        'visible' => [
+          ':input[name="info_button_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
     ];
 
     // Aspect Ratio Settings...
@@ -252,6 +265,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('number_of_images', $form_state->getValue('number_of_images'))
       ->set('carousel_duration', $form_state->getValue('carousel_duration'))
       ->set('image_size', $form_state->getValue('image_size'))
+      ->set('info_button_enabled', (bool) $form_state->getValue('info_button_enabled'))
       ->set('aspect_ratio_mode', $form_state->getValue('aspect_ratio_mode'))
       ->set('aspect_ratio_custom_width', (int) $form_state->getValue('aspect_ratio_custom_width'))
       ->set('aspect_ratio_custom_height', (int) $form_state->getValue('aspect_ratio_custom_height'))

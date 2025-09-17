@@ -2,6 +2,18 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.2.5] - 2025-09-17
+
+### Added
+- Setting: Enable/disable the Info button (ⓘ). When disabled, the button, panel markup, and related JS interactions are suppressed.
+
+### Changed
+- Admin UI: Moved the toggle just above the Info panel text and hides the text field dynamically when disabled (better clarity).
+
+### Fixed
+- Info button visibility toggle now respected in Twig by adding `info_button_enabled` to theme hook variables.
+
+
 ## [1.2.4] - 2025-09-17
 
 ### Added

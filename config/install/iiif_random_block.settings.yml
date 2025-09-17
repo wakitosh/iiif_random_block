@@ -11,3 +11,4 @@ selection_rules: |-
   2 => 2
   3+ => random(2-last-1)
 cron_interval: 86400
+info_button_enabled: true

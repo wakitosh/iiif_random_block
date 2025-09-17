@@ -167,6 +167,7 @@
       {% for item in items %}
         <div class="iiif-carousel-item">
           <div class="iiif-mediawrap">
+            {% if info_button_enabled %}
             <div class="iiif-info-btn" role="button" aria-label="Information">
               <!-- Provided SVG info icon (color via currentColor) -->
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" aria-hidden="true">
@@ -177,22 +178,25 @@
                 </g>
               </svg>
             </div>
+            {% endif %}
 
             {# The image itself remains a link to the item page #}
             <a class="iiif-imgwrap" href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
               <img src="{{ item.image_url }}" alt="{{ item.label }}" loading="lazy">
             </a>
 
-            <div class="iiif-info-panel" role="dialog" aria-modal="false">
-              <div class="iiif-info-close" role="button" aria-label="Close">
-                <!-- SVG close icon (X) -->
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                </svg>
+            {% if info_button_enabled %}
+              <div class="iiif-info-panel" role="dialog" aria-modal="false">
+                <div class="iiif-info-close" role="button" aria-label="Close">
+                  <!-- SVG close icon (X) -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                  </svg>
+                </div>
+                {{ info_text }}
               </div>
-              {{ info_text }}
-            </div>
+            {% endif %}
           </div>
 
           {# The text link below is now the item's label, linking to the item page #}

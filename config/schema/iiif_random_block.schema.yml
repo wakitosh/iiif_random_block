@@ -33,3 +33,16 @@ iiif_random_block.settings:
     cron_interval:
       type: integer
       label: 'Update interval (seconds)'
+    info_button_enabled:
+      type: boolean
+      label: 'Enable info button'
+    info_text:
+      type: mapping
+      label: 'Info panel text'
+      mapping:
+        value:
+          type: text
+          label: 'Text value'
+        format:
+          type: string
+          label: 'Text format'

@@ -102,6 +102,7 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
       '#source_link_text' => $config->get('source_link_text'),
       '#source_link' => $config->get('source_link_url'),
       '#aspect_ratio' => $ratio,
+      '#info_button_enabled' => $config->get('info_button_enabled') !== NULL ? (bool) $config->get('info_button_enabled') : TRUE,
       // Provide processed text for info panel.
       '#info_text' => [
         '#type' => 'processed_text',
@@ -114,6 +115,7 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
     $duration = $config->get('carousel_duration') ?: 10;
     $build['#attached']['library'][] = 'iiif_random_block/carousel';
     $build['#attached']['drupalSettings']['iiif_random_block']['carousel']['duration'] = $duration * 1000;
+    $build['#attached']['drupalSettings']['iiif_random_block']['carousel']['infoEnabled'] = $build['content']['#info_button_enabled'];
 
     // Provide correct cacheability so changes in settings are reflected
     // immediately without requiring a full cache rebuild. When the

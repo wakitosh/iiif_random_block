@@ -9,6 +9,7 @@
     attach: function (context, settings) {
       // Get duration from drupalSettings, with a fallback to 10 seconds.
       const duration = drupalSettings.iiif_random_block?.carousel?.duration || 10000;
+      const infoEnabled = drupalSettings.iiif_random_block?.carousel?.infoEnabled !== false; // default true
       const waitAllOnFirstCycle = true; // 初回のみ全画像のロード完了を待つ
 
       // Find all carousel containers in the current context that haven't been processed yet.
@@ -121,64 +122,66 @@
           startAfterPreload();
         }
 
-        // Info panel interactions
-        const onClickInfo = (btn) => {
-          const item = btn.closest('.iiif-carousel-item');
-          const panel = item.querySelector('.iiif-info-panel');
-          if (!panel) return;
-          // Toggle open state
-          const willOpen = !panel.classList.contains('open');
-          document.querySelectorAll('.iiif-carousel-item .iiif-info-panel.open').forEach(p => p.classList.remove('open'));
-          if (willOpen) {
-            panel.classList.add('open');
-            pausedByInfo = true;
-            pause();
-          } else {
+        if (infoEnabled) {
+          // Info panel interactions
+          const onClickInfo = (btn) => {
+            const item = btn.closest('.iiif-carousel-item');
+            const panel = item.querySelector('.iiif-info-panel');
+            if (!panel) return;
+            // Toggle open state
+            const willOpen = !panel.classList.contains('open');
+            document.querySelectorAll('.iiif-carousel-item .iiif-info-panel.open').forEach(p => p.classList.remove('open'));
+            if (willOpen) {
+              panel.classList.add('open');
+              pausedByInfo = true;
+              pause();
+            } else {
+              panel.classList.remove('open');
+              pausedByInfo = false;
+              resume();
+            }
+          };
+
+          const onClickClose = (btn) => {
+            const panel = btn.closest('.iiif-info-panel');
+            if (!panel) return;
             panel.classList.remove('open');
             pausedByInfo = false;
             resume();
-          }
-        };
+          };
 
-        const onClickClose = (btn) => {
-          const panel = btn.closest('.iiif-info-panel');
-          if (!panel) return;
-          panel.classList.remove('open');
-          pausedByInfo = false;
-          resume();
-        };
+          // Delegate clicks inside this carousel
+          carousel.addEventListener('click', (e) => {
+            const target = e.target.closest('.iiif-info-btn, .iiif-info-close');
+            if (!target || !carousel.contains(target)) return;
+            e.preventDefault();
+            if (target.classList.contains('iiif-info-btn')) onClickInfo(target);
+            if (target.classList.contains('iiif-info-close')) onClickClose(target);
+          });
 
-        // Delegate clicks inside this carousel
-        carousel.addEventListener('click', (e) => {
-          const target = e.target.closest('.iiif-info-btn, .iiif-info-close');
-          if (!target || !carousel.contains(target)) return;
-          e.preventDefault();
-          if (target.classList.contains('iiif-info-btn')) onClickInfo(target);
-          if (target.classList.contains('iiif-info-close')) onClickClose(target);
-        });
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-          const openPanel = carousel.querySelector('.iiif-info-panel.open');
-          if (!openPanel) return;
-          if (!openPanel.contains(e.target) && !e.target.closest('.iiif-info-btn')) {
-            openPanel.classList.remove('open');
-            pausedByInfo = false;
-            resume();
-          }
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') {
+          // Close on outside click
+          document.addEventListener('click', (e) => {
             const openPanel = carousel.querySelector('.iiif-info-panel.open');
-            if (openPanel) {
+            if (!openPanel) return;
+            if (!openPanel.contains(e.target) && !e.target.closest('.iiif-info-btn')) {
               openPanel.classList.remove('open');
               pausedByInfo = false;
               resume();
             }
-          }
-        });
+          });
+
+          // Close on Escape
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              const openPanel = carousel.querySelector('.iiif-info-panel.open');
+              if (openPanel) {
+                openPanel.classList.remove('open');
+                pausedByInfo = false;
+                resume();
+              }
+            }
+          });
+        }
       });
     }
   };
