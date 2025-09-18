@@ -83,7 +83,9 @@
     display: none;
     z-index: 3;
     text-align: left; /* override parent center alignment */
+    width: fit-content;
   }
+
   .iiif-info-panel.open { display: block; }
   .iiif-info-panel .iiif-info-close {
     position: sticky;
@@ -154,6 +156,7 @@
     font-size: 0.8em;
     color: #666;
     text-align: right;
+    width: 100%;
   }
   @keyframes iiif-fade {
     from { opacity: .4 }
