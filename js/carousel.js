@@ -124,6 +124,15 @@
 
         if (infoEnabled) {
           // Info panel interactions
+          const updateScrollHints = (panel) => {
+            const scroller = panel.querySelector('.iiif-info-scroll') || panel;
+            const { scrollTop, scrollHeight, clientHeight } = scroller;
+            const canScroll = scrollHeight > clientHeight + 1; // tolerate rounding
+            panel.classList.toggle('can-scroll', canScroll);
+            panel.classList.toggle('not-at-top', canScroll && scrollTop > 0);
+            panel.classList.toggle('not-at-bottom', canScroll && (scrollTop + clientHeight < scrollHeight - 1));
+          };
+
           const onClickInfo = (btn) => {
             const item = btn.closest('.iiif-carousel-item');
             const panel = item.querySelector('.iiif-info-panel');
@@ -135,10 +144,37 @@
               panel.classList.add('open');
               pausedByInfo = true;
               pause();
+              // Update scroll hints initially and bind listeners
+              updateScrollHints(panel);
+              const scroller = panel.querySelector('.iiif-info-scroll') || panel;
+              const onPanelScroll = () => updateScrollHints(panel);
+              const onPanelResize = () => updateScrollHints(panel);
+              scroller.addEventListener('scroll', onPanelScroll, { passive: true });
+              panel._onPanelScroll = onPanelScroll;
+              panel._scroller = scroller;
+              // Use ResizeObserver when available
+              if (window.ResizeObserver) {
+                const ro = new ResizeObserver(onPanelResize);
+                ro.observe(panel);
+                panel._resizeObserver = ro;
+              } else {
+                // Fallback to periodic checks
+                panel._resizeInterval = setInterval(() => updateScrollHints(panel), 250);
+              }
             } else {
               panel.classList.remove('open');
               pausedByInfo = false;
               resume();
+              // Cleanup scroll hint listeners
+              panel.removeEventListener('scroll', panel._onPanelScroll || (() => { }));
+              if (panel._resizeObserver) {
+                panel._resizeObserver.disconnect();
+                panel._resizeObserver = null;
+              }
+              if (panel._resizeInterval) {
+                clearInterval(panel._resizeInterval);
+                panel._resizeInterval = null;
+              }
             }
           };
 
@@ -148,6 +184,16 @@
             panel.classList.remove('open');
             pausedByInfo = false;
             resume();
+            // Cleanup scroll hint listeners
+            if (panel._onPanelScroll && panel._scroller) panel._scroller.removeEventListener('scroll', panel._onPanelScroll);
+            if (panel._resizeObserver) {
+              panel._resizeObserver.disconnect();
+              panel._resizeObserver = null;
+            }
+            if (panel._resizeInterval) {
+              clearInterval(panel._resizeInterval);
+              panel._resizeInterval = null;
+            }
           };
 
           // Delegate clicks inside this carousel

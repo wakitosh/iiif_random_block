@@ -2,6 +2,21 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.3.0] - 2025-09-18
+
+### Added
+- Responsive aspect ratios: configurable aspect ratios for medium and small screens, with breakpoint max widths. Includes admin settings, schema/defaults, and front-end wiring via CSS variables and media queries.
+- Unique wrapper id per block instance to scope responsive CSS and avoid collisions when multiple blocks are on the same page.
+
+### Changed
+- Settings UI: Reordered Display Settings so that “Responsive aspect ratios” appears above “Enable info button”.
+- Settings UI: Within the responsive section, Small screen fields now appear above Medium screen fields for a top-down mobile-first flow.
+- Front-end: Info icon visibility improved — appears on media or item hover, on keyboard focus (focus-within), and shows by default on touch devices.
+
+### Fixed
+- Block render array keys and indentation issues (removed accidental quoted keys, normalized indentation).
+- Theme hook variables updated to include new responsive fields to prevent undefined Twig variables.
+
 ## [1.2.5] - 2025-09-17
 
 ### Added

@@ -144,7 +144,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Enable info button'),
       '#description' => $this->t('If unchecked, the ⓘ button and info panel will be hidden entirely.'),
       '#default_value' => $config->get('info_button_enabled') !== NULL ? (bool) $config->get('info_button_enabled') : TRUE,
-      '#weight' => 49,
+      '#weight' => 90,
     ];
     $form['display_settings']['info_text'] = [
       '#type' => 'text_format',
@@ -152,7 +152,7 @@ class SettingsForm extends ConfigFormBase {
       '#description' => $this->t('Text shown when clicking the ⓘ icon on a slide.'),
       '#format' => $config->get('info_text.format') ?: filter_default_format(),
       '#default_value' => $config->get('info_text.value') ?: '',
-      '#weight' => 50,
+      '#weight' => 91,
       '#states' => [
         'visible' => [
           ':input[name="info_button_enabled"]' => ['checked' => TRUE],
@@ -192,6 +192,105 @@ class SettingsForm extends ConfigFormBase {
       '#states' => [
         'visible' => [
           ':input[name="aspect_ratio_mode"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+
+    // Responsive Aspect Ratios.
+    $form['display_settings']['responsive'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Responsive aspect ratios'),
+      '#open' => FALSE,
+      '#description' => $this->t('Configure alternative aspect ratios for medium and small screens. Leave the mode empty to inherit the default PC setting.'),
+      '#weight' => 80,
+    ];
+    $form['display_settings']['responsive']['breakpoint_sm_max'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Small screen max width'),
+      '#description' => $this->t('Applies up to this width (px).'),
+      '#field_suffix' => 'px',
+      '#default_value' => $config->get('breakpoint_sm_max') ?? 599,
+    ];
+    $form['display_settings']['responsive']['breakpoint_md_max'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Medium screen max width'),
+      '#description' => $this->t('Applies up to this width (px). Above this width, the default (PC) setting applies.'),
+      '#field_suffix' => 'px',
+      '#default_value' => $config->get('breakpoint_md_max') ?? 1023,
+    ];
+    // Medium screens.
+    $form['display_settings']['responsive']['aspect_ratio_mode_md'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Aspect ratio (medium screens)'),
+      '#options' => [
+        '' => $this->t('- Inherit default -'),
+        '1_1' => $this->t('1:1'),
+        '4_3' => $this->t('4:3'),
+        '16_9' => $this->t('16:9'),
+        'custom' => $this->t('Custom ratio'),
+      ],
+      '#default_value' => $config->get('aspect_ratio_mode_md') ?? '',
+      '#weight' => 20,
+    ];
+    $form['display_settings']['responsive']['aspect_ratio_custom_width_md'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio width (medium)'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_width_md') ?: 1,
+      '#weight' => 21,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode_md"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    $form['display_settings']['responsive']['aspect_ratio_custom_height_md'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio height (medium)'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_height_md') ?: 1,
+      '#weight' => 22,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode_md"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    // Small screens.
+    $form['display_settings']['responsive']['aspect_ratio_mode_sm'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Aspect ratio (small screens)'),
+      '#options' => [
+        '' => $this->t('- Inherit default -'),
+        '1_1' => $this->t('1:1'),
+        '4_3' => $this->t('4:3'),
+        '16_9' => $this->t('16:9'),
+        'custom' => $this->t('Custom ratio'),
+      ],
+      '#default_value' => $config->get('aspect_ratio_mode_sm') ?? '',
+      '#weight' => 10,
+    ];
+    $form['display_settings']['responsive']['aspect_ratio_custom_width_sm'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio width (small)'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_width_sm') ?: 1,
+      '#weight' => 11,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode_sm"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
+    $form['display_settings']['responsive']['aspect_ratio_custom_height_sm'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Custom ratio height (small)'),
+      '#min' => 1,
+      '#default_value' => $config->get('aspect_ratio_custom_height_sm') ?: 1,
+      '#weight' => 12,
+      '#states' => [
+        'visible' => [
+          ':input[name="aspect_ratio_mode_sm"]' => ['value' => 'custom'],
         ],
       ],
     ];
@@ -269,6 +368,14 @@ class SettingsForm extends ConfigFormBase {
       ->set('aspect_ratio_mode', $form_state->getValue('aspect_ratio_mode'))
       ->set('aspect_ratio_custom_width', (int) $form_state->getValue('aspect_ratio_custom_width'))
       ->set('aspect_ratio_custom_height', (int) $form_state->getValue('aspect_ratio_custom_height'))
+      ->set('breakpoint_sm_max', (int) $form_state->getValue('breakpoint_sm_max'))
+      ->set('breakpoint_md_max', (int) $form_state->getValue('breakpoint_md_max'))
+      ->set('aspect_ratio_mode_md', (string) $form_state->getValue('aspect_ratio_mode_md'))
+      ->set('aspect_ratio_custom_width_md', (int) $form_state->getValue('aspect_ratio_custom_width_md'))
+      ->set('aspect_ratio_custom_height_md', (int) $form_state->getValue('aspect_ratio_custom_height_md'))
+      ->set('aspect_ratio_mode_sm', (string) $form_state->getValue('aspect_ratio_mode_sm'))
+      ->set('aspect_ratio_custom_width_sm', (int) $form_state->getValue('aspect_ratio_custom_width_sm'))
+      ->set('aspect_ratio_custom_height_sm', (int) $form_state->getValue('aspect_ratio_custom_height_sm'))
       ->set('selection_rules', $form_state->getValue('selection_rules'))
       ->set('cron_interval', $form_state->getValue('cron_interval'))
       ->set('info_text', [
@@ -327,6 +434,19 @@ class SettingsForm extends ConfigFormBase {
       }
       if ($h < 1) {
         $form_state->setErrorByName('aspect_ratio_custom_height', $this->t('Custom ratio height must be greater than 0.'));
+      }
+    }
+    // Validate responsive custom ratios if specified.
+    foreach (['md', 'sm'] as $bp) {
+      if ($form_state->getValue('aspect_ratio_mode_' . $bp) === 'custom') {
+        $w = (int) $form_state->getValue('aspect_ratio_custom_width_' . $bp);
+        $h = (int) $form_state->getValue('aspect_ratio_custom_height_' . $bp);
+        if ($w < 1) {
+          $form_state->setErrorByName('aspect_ratio_custom_width_' . $bp, $this->t('Custom ratio width must be greater than 0.'));
+        }
+        if ($h < 1) {
+          $form_state->setErrorByName('aspect_ratio_custom_height_' . $bp, $this->t('Custom ratio height must be greater than 0.'));
+        }
       }
     }
   }

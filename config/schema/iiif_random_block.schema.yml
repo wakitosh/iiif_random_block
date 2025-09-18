@@ -27,6 +27,31 @@ iiif_random_block.settings:
     aspect_ratio_custom_height:
       type: integer
       label: 'Custom ratio height'
+    # Responsive aspect ratios and breakpoints
+    breakpoint_sm_max:
+      type: integer
+      label: 'Small screen max width (px)'
+    breakpoint_md_max:
+      type: integer
+      label: 'Medium screen max width (px)'
+    aspect_ratio_mode_sm:
+      type: string
+      label: 'Aspect ratio (small screens)'
+    aspect_ratio_custom_width_sm:
+      type: integer
+      label: 'Custom ratio width (small)'
+    aspect_ratio_custom_height_sm:
+      type: integer
+      label: 'Custom ratio height (small)'
+    aspect_ratio_mode_md:
+      type: string
+      label: 'Aspect ratio (medium screens)'
+    aspect_ratio_custom_width_md:
+      type: integer
+      label: 'Custom ratio width (medium)'
+    aspect_ratio_custom_height_md:
+      type: integer
+      label: 'Custom ratio height (medium)'
     selection_rules:
       type: text
       label: 'Image selection rules'

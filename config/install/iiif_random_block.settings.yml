@@ -6,6 +6,14 @@ image_size: 800
 aspect_ratio_mode: '1_1'
 aspect_ratio_custom_width: 1
 aspect_ratio_custom_height: 1
+breakpoint_sm_max: 599
+breakpoint_md_max: 1023
+aspect_ratio_mode_sm: ''
+aspect_ratio_custom_width_sm: 1
+aspect_ratio_custom_height_sm: 1
+aspect_ratio_mode_md: ''
+aspect_ratio_custom_width_md: 1
+aspect_ratio_custom_height_md: 1
 selection_rules: |-
   1 => 1
   2 => 2

@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Component\Utility\Html;
 
 /**
  * Provides an 'IIIF Random Image' Block.
@@ -82,26 +83,47 @@ class IiifRandomBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
     $config = $this->configFactory->get('iiif_random_block.settings');
     // Compute aspect ratio string like "1 / 1" for CSS.
+    $compute_ratio = function ($mode, $w, $h, $fallback) {
+      $ratio = $fallback;
+      if ($mode === '4_3') {
+        $ratio = '4 / 3';
+      }
+      elseif ($mode === '16_9') {
+        $ratio = '16 / 9';
+      }
+      elseif ($mode === '1_1') {
+        $ratio = '1 / 1';
+      }
+      elseif ($mode === 'custom') {
+        $w = max(1, (int) $w);
+        $h = max(1, (int) $h);
+        $ratio = $w . ' / ' . $h;
+      }
+      return $ratio;
+    };
+
     $mode = $config->get('aspect_ratio_mode') ?: '1_1';
-    $ratio = '1 / 1';
-    if ($mode === '4_3') {
-      $ratio = '4 / 3';
-    }
-    elseif ($mode === '16_9') {
-      $ratio = '16 / 9';
-    }
-    elseif ($mode === 'custom') {
-      $w = max(1, (int) $config->get('aspect_ratio_custom_width'));
-      $h = max(1, (int) $config->get('aspect_ratio_custom_height'));
-      $ratio = $w . ' / ' . $h;
-    }
+    $ratio = $compute_ratio($mode, $config->get('aspect_ratio_custom_width'), $config->get('aspect_ratio_custom_height'), '1 / 1');
+    $mode_md = $config->get('aspect_ratio_mode_md') ?: '';
+    $mode_sm = $config->get('aspect_ratio_mode_sm') ?: '';
+    $ratio_md = $mode_md !== '' ? $compute_ratio($mode_md, $config->get('aspect_ratio_custom_width_md'), $config->get('aspect_ratio_custom_height_md'), $ratio) : $ratio;
+    $ratio_sm = $mode_sm !== '' ? $compute_ratio($mode_sm, $config->get('aspect_ratio_custom_width_sm'), $config->get('aspect_ratio_custom_height_sm'), $ratio_md) : $ratio_md;
+    $bp_sm = (int) ($config->get('breakpoint_sm_max') ?? 599);
+    $bp_md = (int) ($config->get('breakpoint_md_max') ?? 1023);
+    $wrapper_id = Html::getUniqueId('iiif-carousel');
 
     $build['content'] = [
       '#theme' => 'iiif_random_block',
+
       '#items' => $items,
+      '#wrapper_id' => $wrapper_id,
       '#source_link_text' => $config->get('source_link_text'),
       '#source_link' => $config->get('source_link_url'),
       '#aspect_ratio' => $ratio,
+      '#aspect_ratio_md' => $ratio_md,
+      '#aspect_ratio_sm' => $ratio_sm,
+      '#breakpoint_sm_max' => $bp_sm,
+      '#breakpoint_md_max' => $bp_md,
       '#info_button_enabled' => $config->get('info_button_enabled') !== NULL ? (bool) $config->get('info_button_enabled') : TRUE,
       // Provide processed text for info panel.
       '#info_text' => [
