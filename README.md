@@ -4,6 +4,15 @@
 
 This module provides a Drupal block that displays a carousel of random images sourced from a user-defined list of IIIF manifests. It is designed to be simple, stable, and configurable through the UI.
 
+## **Screenshot**
+
+![Carousel (example)](docs/screenshots/screenshot-01.png)
+
+Notes:
+- File paths are relative to this README.
+- Prefer PNG or JPEG; keep width around 1200–1600px for clarity.
+- If multiple blocks are on one page, include captions if needed.
+
 ## **Requirements**
 
 * Drupal 10 or 11
@@ -102,6 +111,18 @@ For a production website, you should configure a proper cron job on your server'
 ### **概要**
 
 このモジュールは、ユーザーが定義したIIIFマニフェストのリストからランダムな画像を選択し、カルーセル形式で表示するDrupalブロックを提供します。シンプルで安定しており、UIを通じて設定できるように設計されています。
+
+### **スクリーンショット**
+
+スクリーンショットは `docs/screenshots/` 配下に配置し、本節に参照を追加してください。例（プレースホルダ）:
+
+![カルーセル（例）](docs/screenshots/screenshot-01.png)
+![情報パネル表示中（例）](docs/screenshots/screenshot-02.png)
+
+メモ:
+- このREADMEからの相対パスです。
+- 形式は PNG/JPEG 推奨、幅は 1200–1600px 程度が見やすいです。
+- 同一ページに複数ブロックがある場合は必要に応じてキャプションも併記してください。
 
 ### **要件**
 
