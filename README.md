@@ -8,11 +8,6 @@ This module provides a Drupal block that displays a carousel of random images so
 
 ![Carousel (example)](docs/screenshots/screenshot-01.png)
 
-Notes:
-- File paths are relative to this README.
-- Prefer PNG or JPEG; keep width around 1200–1600px for clarity.
-- If multiple blocks are on one page, include captions if needed.
-
 ## **Requirements**
 
 * Drupal 10 or 11
@@ -115,11 +110,6 @@ For a production website, you should configure a proper cron job on your server'
 ### **スクリーンショット**
 
 ![カルーセル（例）](docs/screenshots/screenshot-01.png)
-
-メモ:
-- このREADMEからの相対パスです。
-- 形式は PNG/JPEG 推奨、幅は 1200–1600px 程度が見やすいです。
-- 同一ページに複数ブロックがある場合は必要に応じてキャプションも併記してください。
 
 ### **要件**
 
