@@ -114,10 +114,7 @@ For a production website, you should configure a proper cron job on your server'
 
 ### **スクリーンショット**
 
-スクリーンショットは `docs/screenshots/` 配下に配置し、本節に参照を追加してください。例（プレースホルダ）:
-
 ![カルーセル（例）](docs/screenshots/screenshot-01.png)
-![情報パネル表示中（例）](docs/screenshots/screenshot-02.png)
 
 メモ:
 - このREADMEからの相対パスです。
