@@ -20,3 +20,4 @@ selection_rules: |-
   3+ => random(2-last-1)
 cron_interval: 86400
 info_button_enabled: true
+v3_item_url_pattern: ''

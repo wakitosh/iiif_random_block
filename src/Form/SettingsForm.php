@@ -118,6 +118,15 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('source_link_url'),
     ];
 
+    // IIIF v3 item URL pattern.
+    $form['source_settings']['v3_item_url_pattern'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('IIIF v3 item URL pattern'),
+      '#description' => $this->t('If a v3 manifest lacks a homepage/related URL, construct the item page URL using this pattern. Use {identifier} as a placeholder. Example: "/s/mysite/document/{identifier}" or a full URL like "https://example.org/s/mysite/document/{identifier}".'),
+      '#placeholder' => '/s/{site-slug}/document/{identifier}',
+      '#default_value' => (string) ($config->get('v3_item_url_pattern') ?? ''),
+    ];
+
     // Display Settings...
     $form['display_settings'] = ['#type' => 'fieldset', '#title' => $this->t('Display Settings')];
     $form['display_settings']['number_of_images'] = [
@@ -382,6 +391,7 @@ class SettingsForm extends ConfigFormBase {
         'value' => $form_state->getValue('info_text')['value'] ?? '',
         'format' => $form_state->getValue('info_text')['format'] ?? filter_default_format(),
       ])
+      ->set('v3_item_url_pattern', (string) $form_state->getValue('v3_item_url_pattern'))
       ->save();
 
     $urls_text = $form_state->getValue('manifest_urls');
@@ -449,6 +459,12 @@ class SettingsForm extends ConfigFormBase {
         }
       }
     }
+
+    // Validate v3 item URL pattern: if provided, must include {identifier}.
+    $pattern = (string) $form_state->getValue('v3_item_url_pattern');
+    if ($pattern !== '' && strpos($pattern, '{identifier}') === FALSE) {
+      $form_state->setErrorByName('v3_item_url_pattern', $this->t('The v3 item URL pattern must include the {identifier} placeholder.'));
+    }
   }
 
   /**
@@ -515,7 +531,62 @@ class SettingsForm extends ConfigFormBase {
           continue;
         }
 
-        $related_url = $manifest['related']['@id'] ?? $manifest['homepage'][0]['id'] ?? '#';
+        // Derive related (item) URL with priority:
+        // 1) If v3 and a pattern is configured AND identifier can be extracted,
+        // build from pattern (preferred over homepage/related).
+        // 2) Else, fall back to manifest-provided related/homepage.
+        // 3) Else, '#'.
+        $related_url = NULL;
+        if ($is_v3) {
+          $pattern = (string) (\Drupal::config('iiif_random_block.settings')->get('v3_item_url_pattern') ?? '');
+          if ($pattern !== '') {
+            // Extract dcterms:identifier from v3 metadata.
+            $identifier = NULL;
+            if (!empty($manifest['metadata']) && is_array($manifest['metadata'])) {
+              $identifier = static::extractIdentifierFromV3Metadata($manifest['metadata']);
+            }
+            if ($identifier) {
+              $built = strtr($pattern, [
+                '{identifier}' => rawurlencode((string) $identifier),
+              ]);
+              // If the pattern result is relative, prefix with the manifest's
+              // origin (remote server domain), not the Drupal site's domain.
+              if (!preg_match('/^https?:\/\//i', $built)) {
+                $parts = parse_url($manifest_url);
+                $origin = '';
+                if (!empty($parts['scheme']) && !empty($parts['host'])) {
+                  $origin = $parts['scheme'] . '://' . $parts['host'];
+                  if (!empty($parts['port'])) {
+                    $origin .= ':' . $parts['port'];
+                  }
+                }
+                if ($origin !== '') {
+                  // Ensure exactly one slash between origin and path.
+                  if (strpos($built, '/') === 0) {
+                    $related_url = rtrim($origin, '/') . $built;
+                  }
+                  else {
+                    $related_url = rtrim($origin, '/') . '/' . ltrim($built, '/');
+                  }
+                }
+                else {
+                  // Last resort: keep relative to avoid using Drupal domain.
+                  $related_url = $built;
+                }
+              }
+              else {
+                $related_url = $built;
+              }
+            }
+          }
+        }
+        // Fallback to manifest URLs only if pattern not used.
+        if (!$related_url) {
+          $related_url = $manifest['related']['@id'] ?? ($manifest['homepage'][0]['id'] ?? NULL);
+        }
+        if (!$related_url) {
+          $related_url = '#';
+        }
 
         // ** FIX **: Updated label extraction logic for v3 manifests.
         $label = 'Untitled';
@@ -572,6 +643,56 @@ class SettingsForm extends ConfigFormBase {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Extracts dcterms:identifier from a IIIF v3 metadata array.
+   */
+  private static function extractIdentifierFromV3Metadata(array $metadata): ?string {
+    foreach ($metadata as $entry) {
+      $label = isset($entry['label']) ? static::firstText($entry['label']) : NULL;
+      if (!$label) {
+        continue;
+      }
+      $key = strtolower(trim((string) $label));
+      if ($key === 'dcterms:identifier' || $key === 'identifier') {
+        $val = isset($entry['value']) ? static::firstText($entry['value']) : NULL;
+        if (is_string($val) && $val !== '') {
+          return $val;
+        }
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Returns the first human-readable string from a v2/v3 label/value.
+   */
+  private static function firstText($value): ?string {
+    if (is_string($value)) {
+      return $value;
+    }
+    if (is_array($value)) {
+      // Language map: {"en": ["Text"]} or value objects.
+      if (isset($value['@value']) && is_string($value['@value'])) {
+        return $value['@value'];
+      }
+      $first = reset($value);
+      if (is_array($first)) {
+        // Could be ["Text"] or [{"@value": "Text"}].
+        $inner = reset($first);
+        if (is_string($inner)) {
+          return $inner;
+        }
+        if (is_array($inner) && isset($inner['@value']) && is_string($inner['@value'])) {
+          return $inner['@value'];
+        }
+      }
+      elseif (is_string($first)) {
+        return $first;
+      }
+    }
+    return NULL;
   }
 
   /**

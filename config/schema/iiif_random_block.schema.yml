@@ -43,6 +43,10 @@ iiif_random_block.settings:
     aspect_ratio_custom_height_sm:
       type: integer
       label: 'Custom ratio height (small)'
+    v3_item_url_pattern:
+      type: string
+      label: 'IIIF v3 item URL pattern'
+      description: 'Pattern to construct item page URL for IIIF v3 manifests. Use {identifier} placeholder.'
     aspect_ratio_mode_md:
       type: string
       label: 'Aspect ratio (medium screens)'

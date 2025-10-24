@@ -2,6 +2,14 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.3.1] - 2025-10-25
+
+### Changed
+- IIIF v3 item URL derivation: When a pattern is configured (IIIF v3 item URL pattern), it is now prioritized over manifest-provided homepage/related.
+
+### Fixed
+- Relative patterns are now resolved against the manifest origin (remote server domain), preventing accidental use of the Drupal site domain that led to 404/Not found.
+
 ## [1.3.0] - 2025-09-18
 
 ### Added
