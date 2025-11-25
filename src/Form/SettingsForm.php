@@ -147,6 +147,47 @@ class SettingsForm extends ConfigFormBase {
       '#field_suffix' => $this->t('px'),
     ];
 
+    // IIIF cropping (percent-based, applied to all images).
+    $form['display_settings']['crop'] = [
+      '#type' => 'details',
+      '#title' => $this->t('IIIF cropping (percent)'),
+      '#open' => FALSE,
+      '#description' => $this->t('Trim the IIIF image from each edge, in percent of the full image (0–100). The remaining region is requested via the IIIF Image API using a pct: region.'),
+      '#weight' => 70,
+    ];
+    $form['display_settings']['crop']['crop_top'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Top'),
+      '#min' => 0,
+      '#max' => 100,
+      '#default_value' => (int) ($config->get('crop_top') ?? 0),
+      '#field_suffix' => '%',
+    ];
+    $form['display_settings']['crop']['crop_right'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Right'),
+      '#min' => 0,
+      '#max' => 100,
+      '#default_value' => (int) ($config->get('crop_right') ?? 0),
+      '#field_suffix' => '%',
+    ];
+    $form['display_settings']['crop']['crop_bottom'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Bottom'),
+      '#min' => 0,
+      '#max' => 100,
+      '#default_value' => (int) ($config->get('crop_bottom') ?? 0),
+      '#field_suffix' => '%',
+    ];
+    $form['display_settings']['crop']['crop_left'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Left'),
+      '#min' => 0,
+      '#max' => 100,
+      '#default_value' => (int) ($config->get('crop_left') ?? 0),
+      '#field_suffix' => '%',
+    ];
+
     // Info panel content (rich text).
     $form['display_settings']['info_button_enabled'] = [
       '#type' => 'checkbox',
@@ -385,6 +426,10 @@ class SettingsForm extends ConfigFormBase {
       ->set('aspect_ratio_mode_sm', (string) $form_state->getValue('aspect_ratio_mode_sm'))
       ->set('aspect_ratio_custom_width_sm', (int) $form_state->getValue('aspect_ratio_custom_width_sm'))
       ->set('aspect_ratio_custom_height_sm', (int) $form_state->getValue('aspect_ratio_custom_height_sm'))
+      ->set('crop_top', (int) $form_state->getValue('crop_top'))
+      ->set('crop_right', (int) $form_state->getValue('crop_right'))
+      ->set('crop_bottom', (int) $form_state->getValue('crop_bottom'))
+      ->set('crop_left', (int) $form_state->getValue('crop_left'))
       ->set('selection_rules', $form_state->getValue('selection_rules'))
       ->set('cron_interval', $form_state->getValue('cron_interval'))
       ->set('info_text', [
@@ -465,6 +510,18 @@ class SettingsForm extends ConfigFormBase {
     if ($pattern !== '' && strpos($pattern, '{identifier}') === FALSE) {
       $form_state->setErrorByName('v3_item_url_pattern', $this->t('The v3 item URL pattern must include the {identifier} placeholder.'));
     }
+
+    // Validate IIIF cropping: ensure percentages are 0–100 and region is valid.
+    $top = max(0, min(100, (int) $form_state->getValue('crop_top')));
+    $right = max(0, min(100, (int) $form_state->getValue('crop_right')));
+    $bottom = max(0, min(100, (int) $form_state->getValue('crop_bottom')));
+    $left = max(0, min(100, (int) $form_state->getValue('crop_left')));
+    if ($left + $right >= 100) {
+      $form_state->setErrorByName('crop_right', $this->t('The sum of left and right cropping must be less than 100%.'));
+    }
+    if ($top + $bottom >= 100) {
+      $form_state->setErrorByName('crop_bottom', $this->t('The sum of top and bottom cropping must be less than 100%.'));
+    }
   }
 
   /**
@@ -484,6 +541,12 @@ class SettingsForm extends ConfigFormBase {
     $database = \Drupal::database();
     $client_factory = \Drupal::service('http_client_factory');
     $logger = \Drupal::logger('iiif_random_block');
+
+    $config = \Drupal::config('iiif_random_block.settings');
+    $crop_top = (int) ($config->get('crop_top') ?? 0);
+    $crop_right = (int) ($config->get('crop_right') ?? 0);
+    $crop_bottom = (int) ($config->get('crop_bottom') ?? 0);
+    $crop_left = (int) ($config->get('crop_left') ?? 0);
 
     $query = $database->select('iiif_manifest_urls', 'm')->fields('m', ['url'])->orderRandom()->range(0, $number_of_images);
     $manifest_urls = $query->execute()->fetchCol();
@@ -608,8 +671,22 @@ class SettingsForm extends ConfigFormBase {
           }
         }
 
+        // Build IIIF Image API URL with optional pct-based cropping.
+        $region = 'full';
+        $lt = max(0, min(100, $crop_top));
+        $lr = max(0, min(100, $crop_right));
+        $lb = max(0, min(100, $crop_bottom));
+        $ll = max(0, min(100, $crop_left));
+        if ($ll + $lr < 100 && $lt + $lb < 100 && ($ll || $lr || $lt || $lb)) {
+          $x = $ll;
+          $y = $lt;
+          $w = max(1, 100 - $ll - $lr);
+          $h = max(1, 100 - $lt - $lb);
+          $region = sprintf('pct:%d,%d,%d,%d', $x, $y, $w, $h);
+        }
+
         $display_data[] = [
-          'image_url' => rtrim($image_service, '/') . "/full/$image_size,/0/default.jpg",
+          'image_url' => rtrim($image_service, '/') . "/$region/$image_size,/0/default.jpg",
           'manifest_url' => $manifest_url,
           'related_url' => $related_url,
           'label' => mb_substr($label, 0, 512),

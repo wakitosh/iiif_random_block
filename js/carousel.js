@@ -24,6 +24,9 @@
           return;
         }
 
+        const dotsWrapper = carousel.parentElement.querySelector('.iiif-carousel-dots');
+        const dots = dotsWrapper ? dotsWrapper.querySelectorAll('.iiif-carousel-dot') : [];
+
         // Store state on the element itself.
         carousel.slideIndex = 0;
         let started = false;
@@ -75,6 +78,14 @@
           if (slides[index - 1]) {
             slides[index - 1].classList.add('active');
           }
+
+          // Update dots
+          if (dots && dots.length) {
+            dots.forEach((dot) => {
+              const di = parseInt(dot.getAttribute('data-slide-index'), 10) || 0;
+              dot.classList.toggle('active', di === index);
+            });
+          }
         }
 
         function scheduleNext() {
@@ -120,6 +131,22 @@
         } else {
           // 互換: すぐに開始
           startAfterPreload();
+        }
+
+        // Dots click: jump to specific slide and reset timer.
+        if (dotsWrapper && dots && dots.length) {
+          dotsWrapper.addEventListener('click', (e) => {
+            const btn = e.target.closest('.iiif-carousel-dot');
+            if (!btn) return;
+            e.preventDefault();
+            const targetIndex = parseInt(btn.getAttribute('data-slide-index'), 10) || 1;
+            pause();
+            setActive(targetIndex);
+            if (!pausedByInfo) {
+              started = true;
+              scheduleNext();
+            }
+          });
         }
 
         if (infoEnabled) {

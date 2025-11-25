@@ -252,6 +252,30 @@
     text-align: center;
     width: auto;
   }
+  /* Dots navigation */
+  .iiif-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+  }
+  .iiif-carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid #999;
+    background: #fff;
+    padding: 0;
+    cursor: pointer;
+  }
+  .iiif-carousel-dot.active {
+    background: #333;
+    border-color: #333;
+  }
+  .iiif-carousel-dot:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
   @keyframes iiif-fade {
     from { opacity: .4 }
     to { opacity: 1 }
@@ -325,6 +349,11 @@
             </a>
           </div>
         </div>
+      {% endfor %}
+    </div>
+    <div class="iiif-carousel-dots" role="tablist" aria-label="Carousel navigation">
+      {% for item in items %}
+        <button class="iiif-carousel-dot" type="button" data-slide-index="{{ loop.index }}" aria-label="Slide {{ loop.index }}" role="tab"></button>
       {% endfor %}
     </div>
   {% else %}

@@ -52,6 +52,8 @@ This section shows a list of the images that are currently selected for display 
 * **Carousel duration**: The time in seconds to display each image before switching to the next one.
 * **Image size (max pixels)**: The maximum width (in pixels) for the fetched IIIF image. The height will be scaled proportionally. A value of `800` is a good starting point.
 * **Aspect ratio**: Controls the rendered box ratio and uses client-side cropping via CSS. Options: `1:1` (default), `4:3`, `16:9`, or **Custom ratio** (enter width and height). Cropping is applied with `aspect-ratio` and `object-fit: cover`. If you need server-side square images, consider IIIF Image API features (e.g., `region=square`) depending on your image server's support.
+* **IIIF cropping (percent)**: Optional server-side cropping using IIIF Image API `pct:` regions. You can trim the image from the **top, right, bottom, and left** edges in percent (0–100). When any edge is non-zero and the remaining region is valid, the module replaces `full` with `pct:x,y,w,h` in the IIIF URL so that the server returns only the specified sub-region.
+* **Carousel dots**: The block shows a row of small dots under the image area. Each dot corresponds to one slide; clicking a dot jumps directly to that slide while the automatic rotation continues to run in the background.
 
 #### **4\. Image Selection Rules**
 
@@ -155,6 +157,8 @@ For a production website, you should configure a proper cron job on your server'
 * **Carousel duration**: 各画像が次の画像に切り替わるまでの表示時間（秒単位）。
 * **Image size (max pixels)**: 取得するIIIF画像の最大**幅**（ピクセル単位）。高さは縦横比を維持して自動的に調整されます。800 が手始めとして良い値です。
 * **Aspect ratio（アスペクト比）**: 表示ボックスの比率を指定します。CSS によるクライアント側のトリミングで反映されます。選択肢は `1:1`（既定）、`4:3`、`16:9`、**Custom**（幅・高さを入力）です。`aspect-ratio` と `object-fit: cover` を用いて中央トリミングを行います。サーバ側で正方形を取得したい場合は、IIIF Image API の `region=square` などの機能（サーバ実装に依存）を検討してください。
+* **IIIF cropping (percent)**: IIIF Image API の `pct:` region を利用したサーバ側トリミングです。画像全体に対する **上・右・下・左** からのトリミング量をパーセント（0〜100）で指定できます。どこか一辺でも 0 以外で、かつ残りの領域が有効な場合には、URL 中の `full` が `pct:x,y,w,h` に置き換わり、サーバからトリミング済みの部分だけが返されます。
+* **カルーセルドット**: 画像エリアの下に小さなドットが並びます。各ドットは1枚のスライドに対応しており、クリックすることでそのスライドに直接ジャンプできます（自動回転は併用されます）。
 
 ##### **4\. 画像選択ルール (Image Selection Rules)**
 

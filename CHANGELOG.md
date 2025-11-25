@@ -2,6 +2,15 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.4.0] - 2025-11-25
+
+### Added
+- Carousel dot navigation below the image area, allowing users to explicitly select which slide to view in addition to automatic rotation.
+- Percent-based IIIF cropping controls (top/right/bottom/left) in the Display Settings, applied to all images via a `pct:` region in the IIIF Image API URL.
+
+### Changed
+- Block image URLs now honor the configured cropping region; when any edge is trimmed and the remaining area is valid, `full` is replaced with a `pct:x,y,w,h` region while preserving the configured max image size.
+
 ## [1.3.1] - 2025-10-25
 
 ### Changed
