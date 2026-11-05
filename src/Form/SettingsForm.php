@@ -547,7 +547,7 @@ class SettingsForm extends ConfigFormBase {
    */
   public static function updateDisplayedImages(int $number_of_images, int $image_size, string $selection_rules) {
     $database = \Drupal::database();
-    $client_factory = \Drupal::service('http_client_factory');
+    $fetcher = \Drupal::service('iiif_random_block.manifest_fetcher');
     $logger = \Drupal::logger('iiif_random_block');
 
     $config = \Drupal::config('iiif_random_block.settings');
@@ -565,15 +565,9 @@ class SettingsForm extends ConfigFormBase {
     }
 
     $display_data = [];
-    $client = $client_factory->fromOptions(['timeout' => 20]);
-
     foreach ($manifest_urls as $manifest_url) {
       try {
-        $response = $client->get($manifest_url);
-        $manifest = json_decode((string) $response->getBody(), TRUE);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-          continue;
-        }
+        $manifest = $fetcher->fetch($manifest_url);
 
         $context = $manifest['@context'] ?? '';
         $is_v3 = is_string($context) && strpos($context, 'presentation/3') !== FALSE;

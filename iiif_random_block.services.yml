@@ -1,0 +1,4 @@
+services:
+  iiif_random_block.manifest_fetcher:
+    class: Drupal\iiif_random_block\Service\ManifestFetcher
+    arguments: ['@http_client_factory']

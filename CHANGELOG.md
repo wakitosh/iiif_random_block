@@ -2,6 +2,23 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.4.2] - 2026-11-06
+
+### Security
+- Added a guarded Manifest fetcher to prevent SSRF through registered URLs or redirects. Only HTTP(S) URLs without embedded credentials are accepted, and every resolved address and redirect destination is checked.
+- Blocked private, loopback, link-local, reserved, and IPv6 transition addresses by default. Pinned each cURL connection to a validated DNS answer to prevent DNS rebinding, disabled outbound proxies, and bounded redirects, response sizes, and timeouts.
+
+### Changed
+- Secure Manifest fetching requires PHP cURL. Trusted internal Manifest hosts can be explicitly allowed through `$settings['iiif_random_block_allowed_private_hosts']`; see README for upgrade instructions.
+- Added regression tests for internal targets, mixed DNS answers, redirect validation, DNS pinning, and explicit private-host exceptions.
+
+### セキュリティ (日本語)
+- Manifest 取得時の SSRF 対策を追加しました。認証情報を含まない HTTP(S) URL のみを許可し、DNS の全応答とリダイレクト先を検証します。
+- 内部・loopback・link-local・予約済みアドレスなどを既定で拒否します。cURL の接続先を検証済み IP に固定し、DNS rebinding とプロキシ経由の回避を防ぎます。
+
+### 変更 (日本語)
+- PHP cURL が必要です。内部 Manifest サーバーを利用する場合は、信頼するホストのみを `$settings['iiif_random_block_allowed_private_hosts']` に明示してください。更新後は Drupal キャッシュの再構築が必要です。
+
 ## [1.4.1] - 2026-06-03
 
 ### Added

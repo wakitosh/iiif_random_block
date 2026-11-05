@@ -11,6 +11,21 @@ This module provides a Drupal block that displays a carousel of random images so
 ## **Requirements**
 
 * Drupal 10 or 11
+* PHP cURL extension
+
+## **Security update / Upgrade to 1.4.2**
+
+After updating, run `drush cr` to register the guarded Manifest fetcher. Manifest URLs and every redirect must use HTTP(S) without embedded credentials and resolve to public addresses. Each connection is pinned to a validated DNS answer; outbound proxies are disabled. Fetches are limited to five redirects, 20 seconds per request, and 8 MiB per response.
+
+If your installation intentionally fetches Manifests from a trusted internal server, allow its exact hostname in `settings.php`:
+
+```php
+$settings['iiif_random_block_allowed_private_hosts'] = ['iiif.internal.example'];
+```
+
+This exception also applies to redirects to that exact hostname. It does not allow arbitrary internal hosts or IP addresses. Only add hosts whose responses and redirects you trust. cURL must be available; requests fail closed when it is missing.
+
+更新後は `drush cr` を実行してください。内部 IP に解決される Manifest URL は既定で拒否されます。内部サーバーを利用する場合は、上記の設定で信頼するホスト名だけを明示してください。PHP cURL がない環境では取得を拒否します。
 
 ## **Installation**
 
