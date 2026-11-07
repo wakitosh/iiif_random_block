@@ -2,6 +2,16 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.4.3] - 2026-11-07
+
+### Security
+- Item links taken from a Manifest are now kept only when they are absolute HTTP(S) URLs; anything else becomes `#`. Links already stored are replaced the next time the images are refreshed.
+- The settings page now uses URL placeholders for its links, which strip dangerous protocols.
+
+### セキュリティ (日本語)
+- マニフェストから取得した項目リンクは、絶対 HTTP(S) URL の場合のみ保持し、それ以外は `#` にします。保存済みのリンクは、次回の画像更新時に置き換わります。
+- 設定画面のリンクに URL 用のプレースホルダを使い、危険なプロトコルを除去するようにしました。
+
 ## [1.4.2] - 2026-11-06
 
 ### Security

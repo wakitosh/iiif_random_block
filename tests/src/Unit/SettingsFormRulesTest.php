@@ -74,4 +74,36 @@ class SettingsFormRulesTest extends UnitTestCase {
     $this->assertContains($sel['id'], ['c1', 'c2', 'c3', 'c4']);
   }
 
+  /**
+   * Tests that only absolute HTTP(S) links from a Manifest are kept.
+   *
+   * @covers ::safeLinkUrl
+   */
+  public function testSafeLinkUrlKeepsOnlyHttpLinks() : void {
+    $method = (new \ReflectionClass(SettingsForm::class))->getMethod('safeLinkUrl');
+    $method->setAccessible(TRUE);
+
+    foreach (['https://example.org/item/1?a=b#c', 'http://example.org/', 'HTTPS://EXAMPLE.ORG/'] as $url) {
+      $this->assertSame($url, $method->invoke(NULL, $url));
+    }
+    $rejected = [
+      NULL,
+      '',
+      '#',
+      'javascript:alert(1)',
+      'JavaScript:alert(1)',
+      ' javascript:alert(1)',
+      "java\tscript:alert(1)",
+      'data:text/html,x',
+      'vbscript:x',
+      '//example.org/item',
+      '/relative/path',
+      ['id' => 'https://example.org/'],
+      42,
+    ];
+    foreach ($rejected as $url) {
+      $this->assertSame('#', $method->invoke(NULL, $url));
+    }
+  }
+
 }

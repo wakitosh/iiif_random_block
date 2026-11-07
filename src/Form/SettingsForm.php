@@ -85,11 +85,11 @@ class SettingsForm extends ConfigFormBase {
         foreach ($results as $item) {
           // Build the links with slashes as separators.
           $items[] = [
-            '#markup' => $this->t('@label (<a href="@image_url" target="_blank">Image</a> / <a href="@manifest_url" target="_blank">Manifest</a> / <a href="@related_url" target="_blank">Source Page</a>)', [
+            '#markup' => $this->t('@label (<a href=":image_url" target="_blank">Image</a> / <a href=":manifest_url" target="_blank">Manifest</a> / <a href=":related_url" target="_blank">Source Page</a>)', [
               '@label' => $item->label,
-              '@image_url' => $item->image_url,
-              '@manifest_url' => $item->manifest_url,
-              '@related_url' => $item->related_url,
+              ':image_url' => $item->image_url,
+              ':manifest_url' => $item->manifest_url,
+              ':related_url' => $item->related_url,
             ]),
           ];
         }
@@ -649,9 +649,7 @@ class SettingsForm extends ConfigFormBase {
         if (!$related_url) {
           $related_url = $manifest['related']['@id'] ?? ($manifest['homepage'][0]['id'] ?? NULL);
         }
-        if (!$related_url) {
-          $related_url = '#';
-        }
+        $related_url = static::safeLinkUrl($related_url);
 
         // ** FIX **: Updated label extraction logic for v3 manifests.
         $label = 'Untitled';
@@ -722,6 +720,23 @@ class SettingsForm extends ConfigFormBase {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Keeps a link from a remote Manifest only if it is an absolute HTTP(S) URL.
+   *
+   * @param mixed $url
+   *   The value taken from the Manifest.
+   *
+   * @return string
+   *   The URL, or '#' if it cannot be linked safely.
+   */
+  private static function safeLinkUrl($url): string {
+    if (!is_string($url)) {
+      return '#';
+    }
+    $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+    return in_array($scheme, ['http', 'https'], TRUE) ? $url : '#';
   }
 
   /**
