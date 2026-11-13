@@ -2,6 +2,14 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.4.4] - 2026-11-13
+
+### Security
+- Image services whose ID in a Manifest is not an absolute HTTP(S) URL are now skipped, so the image address shown in the block is always a web address.
+
+### セキュリティ (日本語)
+- マニフェスト内の画像サービスの ID が絶対 HTTP(S) URL でない場合は、その画像を使わないようにしました。ブロックに表示する画像のアドレスは、常にウェブアドレスになります。
+
 ## [1.4.3] - 2026-11-07
 
 ### Security

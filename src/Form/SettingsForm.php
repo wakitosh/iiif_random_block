@@ -592,7 +592,8 @@ class SettingsForm extends ConfigFormBase {
         else {
           $image_service = $selected_canvas['images'][0]['resource']['service']['@id'] ?? NULL;
         }
-        if (!$image_service) {
+        // The image URL is built from this value, so it must be a web address.
+        if (static::safeLinkUrl($image_service) === '#') {
           continue;
         }
 
