@@ -65,3 +65,10 @@ function iiif_random_block_schema() {
   ];
   return $schema;
 }
+
+/**
+ * Removes the item title length setting; captions now fit on one line by CSS.
+ */
+function iiif_random_block_update_10001() {
+  \Drupal::configFactory()->getEditable('iiif_random_block.settings')->clear('title_max_length')->save();
+}

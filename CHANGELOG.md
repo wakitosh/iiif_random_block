@@ -2,6 +2,26 @@
 
 All notable changes to IIIF Random Block will be documented in this file.
 
+## [1.4.5] - 2026-11-13
+
+### Changed
+- Item captions now stay on one line at any width. Text that does not fit ends with an ellipsis, and the full title appears when hovering over the caption.
+
+### Removed
+- The "Item title max length" setting. A character count cannot keep a caption on one line, because the available width and the width of each character both vary.
+
+### Upgrade
+- Run `drush updb` and `drush cr`. The update removes the stored setting.
+
+### 変更 (日本語)
+- 各画像のキャプションを、表示幅にかかわらず 1 行に収めるようにしました。収まらない部分は「…」で省略し、キャプションにマウスを重ねると全文が表示されます。
+
+### 削除 (日本語)
+- 「Item title max length」の設定を削除しました。表示幅も文字ごとの幅も一定でないため、文字数ではキャプションを 1 行に収められないからです。
+
+### 更新手順 (日本語)
+- `drush updb` と `drush cr` を実行してください。更新処理が保存済みの設定を削除します。
+
 ## [1.4.4] - 2026-11-13
 
 ### Security

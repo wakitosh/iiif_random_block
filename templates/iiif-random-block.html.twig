@@ -235,9 +235,14 @@
   @media (prefers-reduced-motion: reduce) {
     .iiif-imgwrap { animation: none; }
   }
+  /* Keep the caption on one line at any width; the full title is in the
+     link's title attribute. A character limit alone cannot do this, because
+     the available width and the width of each character both vary. */
   .iiif-carousel-item .item-link {
     margin-top: 0.5rem;
-    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .iiif-carousel-item .item-link a {
     color: #333;
@@ -312,8 +317,8 @@
             {% endif %}
 
             {# The image itself remains a link to the item page #}
-            <a class="iiif-imgwrap" href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.full_label|default(item.label) }}">
-              <img src="{{ item.image_url }}" alt="{{ item.full_label|default(item.label) }}" loading="lazy">
+            <a class="iiif-imgwrap" href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
+              <img src="{{ item.image_url }}" alt="{{ item.label }}" loading="lazy">
             </a>
 
             {% if info_button_enabled %}
@@ -344,7 +349,7 @@
 
           {# The text link below is now the item's label, linking to the item page #}
           <div class="item-link">
-            <a href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer">
+            <a href="{{ item.related_url }}" target="_blank" rel="noopener noreferrer" title="{{ item.label }}">
               {{ item.label }}
             </a>
           </div>
